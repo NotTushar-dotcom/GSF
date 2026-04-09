@@ -14,31 +14,25 @@ const item = {
 };
 
 const JOURNEY_STAGES = [
-  { emoji: "💡", label: "Idea", desc: "I have a concept to explore" },
-  { emoji: "🔧", label: "Prototype", desc: "Building my first version" },
-  { emoji: "🚀", label: "MVP", desc: "Testing with real users" },
-  { emoji: "📈", label: "Traction", desc: "Growing and validating" },
-  { emoji: "💼", label: "Business Model", desc: "Ready to scale & raise" },
+  { emoji: "💡", label: "Ideation", shortLabel: "Ideation" },
+  { emoji: "🔍", label: "Idea Screening", shortLabel: "Screening" },
+  { emoji: "📊", label: "Market Research", shortLabel: "Research" },
+  { emoji: "🚀", label: "MVP", shortLabel: "MVP" },
+  { emoji: "💰", label: "Investment & Funding", shortLabel: "Funding" },
+  { emoji: "🏢", label: "Company Launch", shortLabel: "Launch" },
+  { emoji: "📈", label: "Product-Market Fit", shortLabel: "PMF" },
 ];
 
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-soft-pattern">
-      {/* Subtle dot grid */}
       <div className="absolute inset-0 bg-dot-grid opacity-30" />
-
-      {/* Warm glow blobs */}
       <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] rounded-full bg-[#AACDDC]/15 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-[#F3E3D0]/60 blur-[80px] pointer-events-none" />
 
       <div className="section-container relative z-10 pt-28 pb-16">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="max-w-2xl"
-        >
-          {/* Badge */}
+        <motion.div variants={container} initial="hidden" animate="show" className="max-w-2xl">
+
           <motion.div variants={item} className="mb-8">
             <span className="badge badge-blue text-xs">
               <span className="size-1.5 rounded-full bg-[#81A6C6]" />
@@ -46,7 +40,6 @@ export function HeroSection() {
             </span>
           </motion.div>
 
-          {/* Headline */}
           <motion.h1
             variants={item}
             className="text-5xl sm:text-6xl lg:text-7xl text-[#1A2332] leading-[1.1] mb-6 text-balance"
@@ -56,24 +49,17 @@ export function HeroSection() {
             <em className="not-italic text-gradient-primary">Venture Creators.</em>
           </motion.h1>
 
-          {/* Sub */}
-          <motion.p
-            variants={item}
-            className="text-lg sm:text-xl text-[#4A5668] leading-relaxed max-w-xl mb-10"
-          >
+          <motion.p variants={item} className="text-lg sm:text-xl text-[#4A5668] leading-relaxed max-w-xl mb-10">
             Video call world-class experts, pitch your startup to investors, and build
             with a community that takes action — not just talks about it.
           </motion.p>
 
-          {/* CTAs */}
           <motion.div variants={item} className="flex flex-wrap items-center gap-3 mb-14">
             <Link href="/sign-up" className="btn-primary text-base px-7 py-3.5">
-              Get Started Free
-              <ArrowRight className="size-4" />
+              Get Started Free <ArrowRight className="size-4" />
             </Link>
             <Link href="/ventures" className="btn-outline text-base px-7 py-3.5">
-              <Lightbulb className="size-4" />
-              Explore Ventures
+              <Lightbulb className="size-4" /> Explore Ventures
             </Link>
           </motion.div>
 
@@ -82,23 +68,21 @@ export function HeroSection() {
             <p className="text-xs font-semibold uppercase tracking-widest text-[#8A95A3] mb-4">
               Where are you in your founder journey?
             </p>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-2">
               {JOURNEY_STAGES.map((stage) => (
                 <button
                   key={stage.label}
-                  className="group flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#D2C4B4] bg-white hover:border-[#81A6C6] hover:bg-[#EEF4F9] transition-all duration-150 cursor-pointer shadow-soft-sm"
+                  className="group flex items-center gap-2 px-3 py-2 rounded-xl border border-[#D2C4B4] bg-white hover:border-[#81A6C6] hover:bg-[#EEF4F9] transition-all duration-150 cursor-pointer shadow-soft-sm"
                 >
-                  <span className="text-base">{stage.emoji}</span>
-                  <div className="text-left">
-                    <div className="text-xs font-semibold text-[#1A2332] group-hover:text-[#3D74A0]">
-                      {stage.label}
-                    </div>
-                  </div>
+                  <span className="text-sm">{stage.emoji}</span>
+                  <span className="text-xs font-semibold text-[#1A2332] group-hover:text-[#3D74A0]">
+                    {stage.shortLabel}
+                  </span>
                 </button>
               ))}
             </div>
             <p className="text-xs text-[#8A95A3] mt-3">
-              Select your stage and we'll personalise your GSF experience.
+              Select your stage — we personalise your GSF experience.
             </p>
           </motion.div>
 
@@ -113,15 +97,10 @@ export function HeroSection() {
               { value: "₹0", label: "For first 30 days" },
             ].map(({ value, label }) => (
               <div key={label}>
-                <div
-                  className="text-2xl font-bold text-[#1A2332]"
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
+                <div className="text-2xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>
                   {value}
                 </div>
-                <div className="text-xs text-[#8A95A3] mt-0.5 uppercase tracking-wide font-medium">
-                  {label}
-                </div>
+                <div className="text-xs text-[#8A95A3] mt-0.5 uppercase tracking-wide font-medium">{label}</div>
               </div>
             ))}
           </motion.div>
