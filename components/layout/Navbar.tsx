@@ -7,8 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Video, Lightbulb, Users, BookOpen, Rocket, Zap, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getSession, logout } from "@/lib/auth";
-import type { AuthUser } from "@/lib/auth";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 
 const NAV_LINKS = [
   { label: "Connect",   href: "/connect",   icon: Video },
@@ -21,9 +21,15 @@ const NAV_LINKS = [
 export function Navbar() {
   const [scrolled, setScrolled]     = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser]             = useState<AuthUser | null>(null);
   const pathname = usePathname();
   const router   = useRouter();
+
+  // Clerk auth state
+  const { user: clerkUser, isSignedIn, isLoaded } = useUser();
+  const { signOut } = useClerk();
+
+  // Derive GSF user from Clerk
+  const user = isSignedIn && clerkUser ? clerkUserToAuthUser(clerkUser) : null;
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 16);
@@ -31,19 +37,17 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  useEffect(() => {
-    setUser(getSession());
-  }, [pathname]);
-
-  function handleLogout() {
-    logout();
-    setUser(null);
+  async function handleLogout() {
+    await signOut();
     router.push("/");
   }
 
   const navBg = scrolled
     ? "backdrop-blur-md border-b shadow-[var(--shadow-nav)]"
     : "bg-transparent border-b border-transparent";
+
+  // Determine dashboard link based on role stored in Clerk metadata
+  const dashboardHref = user?.role === "expert" ? "/expert-dashboard" : "/dashboard";
 
   return (
     <>
@@ -99,22 +103,39 @@ export function Navbar() {
 
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-2">
-              {user ? (
+              {!isLoaded ? (
+                // Loading skeleton
+                <div className="size-8 rounded-full animate-pulse" style={{ backgroundColor: "var(--bg-surface-2)" }} />
+              ) : isSignedIn && user ? (
                 <>
                   <Link
-                    href={user.role === "expert" ? "/expert-dashboard" : "/dashboard"}
+                    href={dashboardHref}
                     className="btn-ghost text-sm py-2 px-4 flex items-center gap-1.5"
                   >
                     <LayoutDashboard className="size-3.5" />
                     Dashboard
                   </Link>
-                  <div
-                    className="size-8 rounded-full flex items-center justify-center text-xs font-bold text-white cursor-pointer"
-                    style={{ background: "linear-gradient(135deg, #5B6CFF, #4FD1C5)" }}
-                    title={user.name}
-                  >
-                    {user.avatar}
-                  </div>
+                  {/* Avatar — shows profile image from Clerk if available */}
+                  {clerkUser?.imageUrl ? (
+                    <Image
+                      src={clerkUser.imageUrl}
+                      alt={user.name}
+                      width={32}
+                      height={32}
+                      className="size-8 rounded-full object-cover border-2 cursor-pointer"
+                      style={{ borderColor: "rgba(91,108,255,0.4)" }}
+                      onClick={() => router.push(dashboardHref)}
+                    />
+                  ) : (
+                    <div
+                      className="size-8 rounded-full flex items-center justify-center text-xs font-bold text-white cursor-pointer"
+                      style={{ background: "linear-gradient(135deg, #5B6CFF, #4FD1C5)" }}
+                      title={user.name}
+                      onClick={() => router.push(dashboardHref)}
+                    >
+                      {user.avatar}
+                    </div>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="btn-ghost text-sm py-2 px-3"
@@ -178,10 +199,10 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="pt-4 border-t flex flex-col gap-2" style={{ borderTopColor: "var(--border-default)" }}>
-                {user ? (
+                {isSignedIn && user ? (
                   <>
                     <Link
-                      href={user.role === "expert" ? "/expert-dashboard" : "/dashboard"}
+                      href={dashboardHref}
                       onClick={() => setMobileOpen(false)}
                       className="btn-outline w-full justify-center"
                     >

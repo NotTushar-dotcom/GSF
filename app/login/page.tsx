@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Eye, EyeOff, CheckCircle2, Rocket, Star, Zap } from "lucide-react";
-import { setSession } from "@/lib/auth";
+import { ArrowRight, Eye, EyeOff, CheckCircle2, Rocket, Star } from "lucide-react";
+import { useSignIn } from "@clerk/nextjs";
 
-/* Google icon SVG component */
+/* Google icon */
 function GoogleIcon() {
   return (
     <svg className="size-4 flex-shrink-0" viewBox="0 0 24 24">
@@ -20,75 +20,84 @@ function GoogleIcon() {
   );
 }
 
-const MOCK_GOOGLE_ACCOUNTS = [
-  { name: "Arjun Sharma",  email: "arjun@gmail.com",  avatar: "AS", role: "founder" as const },
-  { name: "Riya Mehta",    email: "riya@gmail.com",   avatar: "RM", role: "founder" as const },
-  { name: "Vikram Nair",   email: "vikram@gmail.com", avatar: "VN", role: "expert"  as const },
-];
-
 type Tab = "founder" | "expert";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("founder");
-  const [email, setEmail] = useState("");
+  const { signIn, isLoaded } = useSignIn();
+
+  const [tab, setTab]           = useState<Tab>("founder");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [googlePickerOpen, setGooglePickerOpen] = useState(false);
+  const [showPw, setShowPw]     = useState(false);
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleSuccess, setGoogleSuccess] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [code, setCode]           = useState("");
 
-  /* ── Demo credentials ── */
-  const DEMO = {
-    founder: { email: "abc123@gmail.com", password: "123456" },
-    expert:  { email: "expert@gsf.com",   password: "123456" },
-  };
-
-  function autofill() {
-    setEmail(DEMO[tab].email);
-    setPassword(DEMO[tab].password);
-    setError("");
-  }
-
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isLoaded) return;
     setLoading(true);
     setError("");
-    setTimeout(() => {
-      if (email === DEMO.founder.email && password === "123456") {
-        setSession({ id: "1", name: "Arjun Sharma", email, role: "founder", avatar: "AS", credits: 600, plan: "trial", planExpiresAt: "" });
-        router.push("/dashboard");
-      } else if (email === DEMO.expert.email && password === "123456") {
-        setSession({ id: "2", name: "Vikram Nair", email, role: "expert", avatar: "VN", credits: 420, plan: "basic", planExpiresAt: "" });
-        router.push("/expert-dashboard");
+
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (result.status === "complete") {
+        // Redirect to onboarding which will check role and route accordingly
+        router.push("/onboarding");
+      } else if (result.status === "needs_first_factor") {
+        // Email link / OTP verification needed
+        setVerifying(true);
       } else {
-        setError("Invalid email or password. Use demo credentials below.");
+        setError("Sign in could not complete. Please try again.");
       }
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: { message: string }[] };
+      setError(clerkError?.errors?.[0]?.message ?? "Invalid email or password.");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   }
 
-  function handleGooglePick(account: typeof MOCK_GOOGLE_ACCOUNTS[0]) {
-    setGoogleLoading(true);
-    setTimeout(() => {
-      setGoogleLoading(false);
-      setGoogleSuccess(true);
-      setSession({
-        id: account.role === "expert" ? "2" : "1",
-        name: account.name,
-        email: account.email,
-        role: account.role,
-        avatar: account.avatar,
-        credits: account.role === "expert" ? 420 : 600,
-        plan: "trial",
-        planExpiresAt: "",
+  async function handleVerifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isLoaded) return;
+    setLoading(true);
+    try {
+      const result = await signIn.attemptFirstFactor({
+        strategy: "email_code",
+        code,
       });
-      setTimeout(() => {
-        router.push(account.role === "expert" ? "/expert-dashboard" : "/dashboard");
-      }, 900);
-    }, 1200);
+      if (result.status === "complete") {
+        router.push("/onboarding");
+      }
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: { message: string }[] };
+      setError(clerkError?.errors?.[0]?.message ?? "Invalid code.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    if (!isLoaded) return;
+    setGoogleLoading(true);
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/onboarding",
+      });
+    } catch {
+      setGoogleLoading(false);
+      setError("Google sign-in failed. Please try email instead.");
+    }
   }
 
   return (
@@ -129,151 +138,115 @@ export default function LoginPage() {
             ))}
           </div>
 
-          {/* Google Sign In */}
-          <div className="relative mb-4">
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => { setGooglePickerOpen(true); setGoogleSuccess(false); }}
-              className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border font-medium text-sm transition-all hover:shadow-md"
-              style={{
-                backgroundColor: "var(--bg-surface)",
-                borderColor: "var(--border-default)",
-                color: "var(--text-primary)"
-              }}
-            >
-              <GoogleIcon />
-              Continue with Google
-            </motion.button>
-
-            {/* Google Picker Dropdown */}
-            <AnimatePresence>
-              {googlePickerOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                  className="absolute top-full left-0 right-0 mt-2 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] z-50 overflow-hidden"
-                  style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-default)" }}
-                >
-                  <div className="px-4 py-3 border-b" style={{ borderBottomColor: "var(--border-soft)" }}>
-                    <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Choose an account</p>
-                  </div>
-                  {googleLoading ? (
-                    <div className="flex items-center justify-center py-6">
-                      <div className="size-6 rounded-full border-2 border-t-[#4285F4] animate-spin" style={{ borderColor: "var(--border-default)", borderTopColor: "#4285F4" }} />
-                    </div>
-                  ) : googleSuccess ? (
-                    <div className="flex items-center justify-center gap-2 py-5 text-emerald-500">
-                      <CheckCircle2 className="size-5" />
-                      <span className="text-sm font-medium">Signing you in…</span>
-                    </div>
-                  ) : (
-                    <>
-                      {MOCK_GOOGLE_ACCOUNTS
-                        .filter(a => tab === "expert" ? a.role === "expert" : a.role === "founder")
-                        .map(account => (
-                          <button
-                            key={account.email}
-                            onClick={() => handleGooglePick(account)}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
-                            style={{ borderBottom: "1px solid var(--border-soft)" }}
-                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--bg-surface-2)")}
-                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
-                          >
-                            <div className="size-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                              style={{ background: "linear-gradient(135deg, #4285F4, #34A853)" }}>
-                              {account.avatar}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{account.name}</p>
-                              <p className="text-xs" style={{ color: "var(--text-muted)" }}>{account.email}</p>
-                            </div>
-                            <span className="ml-auto badge badge-blue text-[10px]">{account.role}</span>
-                          </button>
-                        ))}
-                      <button
-                        onClick={() => setGooglePickerOpen(false)}
-                        className="w-full text-center py-2.5 text-xs"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        Use another account
-                      </button>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t" style={{ borderTopColor: "var(--border-soft)" }} />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-3 text-xs" style={{ backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}>or sign in with email</span>
-            </div>
-          </div>
-
-          {/* Email form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Email</label>
-              <input type="email" className="input" value={email} placeholder={tab === "founder" ? "abc123@gmail.com" : "expert@gsf.com"}
-                onChange={e => { setEmail(e.target.value); setError(""); }} required />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Password</label>
-              <div className="relative">
-                <input type={showPw ? "text" : "password"} className="input pr-10" value={password} placeholder="••••••"
-                  onChange={e => { setPassword(e.target.value); setError(""); }} required />
-                <button type="button" onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }}>
-                  {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
+          {verifying ? (
+            /* Email code verification step */
+            <form onSubmit={handleVerifyCode} className="space-y-4">
+              <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
+                A verification code was sent to <strong>{email}</strong>
+              </p>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Verification Code</label>
+                <input
+                  type="text"
+                  className="input text-center text-lg tracking-widest"
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                  placeholder="000000"
+                  maxLength={6}
+                  required
+                />
               </div>
-            </div>
+              {error && (
+                <p className="text-xs text-red-500 p-2 rounded-lg" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>{error}</p>
+              )}
+              <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-2.5">
+                {loading ? <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <><CheckCircle2 className="size-4" /> Verify & Sign In</>}
+              </button>
+            </form>
+          ) : (
+            <>
+              {/* Google Sign In */}
+              <AnimatePresence>
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleGoogleSignIn}
+                  disabled={googleLoading}
+                  className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border font-medium text-sm transition-all hover:shadow-md mb-4"
+                  style={{
+                    backgroundColor: "var(--bg-surface)",
+                    borderColor: "var(--border-default)",
+                    color: "var(--text-primary)"
+                  }}
+                >
+                  {googleLoading
+                    ? <span className="size-4 rounded-full border-2 border-gray-300 border-t-[#4285F4] animate-spin" />
+                    : <GoogleIcon />
+                  }
+                  Continue with Google
+                </motion.button>
+              </AnimatePresence>
 
-            {error && (
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 p-2 rounded-lg"
-                style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                {error}
-              </motion.p>
-            )}
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t" style={{ borderTopColor: "var(--border-soft)" }} />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-3 text-xs" style={{ backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}>or sign in with email</span>
+                </div>
+              </div>
 
-            <button type="submit" disabled={loading}
-              className="btn-primary w-full justify-center py-2.5 relative">
-              {loading
-                ? <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                : <><ArrowRight className="size-4" /> Sign in</>
-              }
-            </button>
-          </form>
+              {/* Email form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Email</label>
+                  <input type="email" className="input" value={email}
+                    placeholder={tab === "founder" ? "you@email.com" : "expert@email.com"}
+                    onChange={e => { setEmail(e.target.value); setError(""); }} required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Password</label>
+                  <div className="relative">
+                    <input type={showPw ? "text" : "password"} className="input pr-10" value={password} placeholder="••••••••"
+                      onChange={e => { setPassword(e.target.value); setError(""); }} required />
+                    <button type="button" onClick={() => setShowPw(!showPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }}>
+                      {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
 
-          {/* Autofill helper */}
-          <button onClick={autofill} className="w-full mt-3 py-2 text-xs rounded-xl border transition-all flex items-center justify-center gap-1.5"
-            style={{ borderColor: "var(--border-soft)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface-2)" }}>
-            <Zap className="size-3" /> Auto-fill demo {tab} credentials
-          </button>
+                {error && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-500 p-2 rounded-lg"
+                    style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                    {error}
+                  </motion.p>
+                )}
 
-          <p className="text-center text-xs mt-5" style={{ color: "var(--text-muted)" }}>
-            No account?{" "}
-            <Link href="/sign-up" className="font-medium" style={{ color: "var(--accent-indigo)" }}>
-              Create one free
-            </Link>
-          </p>
+                <button type="submit" disabled={loading || !isLoaded}
+                  className="btn-primary w-full justify-center py-2.5 relative">
+                  {loading
+                    ? <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    : <><ArrowRight className="size-4" /> Sign in</>
+                  }
+                </button>
+              </form>
+
+              <p className="text-center text-xs mt-5" style={{ color: "var(--text-muted)" }}>
+                No account?{" "}
+                <Link href="/sign-up" className="font-medium" style={{ color: "var(--accent-indigo)" }}>
+                  Create one free
+                </Link>
+              </p>
+            </>
+          )}
         </div>
 
         {/* Trial banner */}
         <div className="mt-4 flex items-center gap-2 justify-center text-xs" style={{ color: "var(--text-muted)" }}>
           <Rocket className="size-3" />
-          <span>Basic plan free for 30 days · No credit card required · Cancel anytime</span>
+          <span>Basic plan free for 30 days · No credit card required</span>
         </div>
       </div>
-
-      {/* Overlay to close picker */}
-      {googlePickerOpen && !googleLoading && !googleSuccess && (
-        <div className="fixed inset-0 z-40" onClick={() => setGooglePickerOpen(false)} />
-      )}
     </main>
   );
 }

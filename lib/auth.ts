@@ -1,5 +1,7 @@
-// ===== DUMMY AUTH SYSTEM =====
-// Temporary auth for demo. Replace with real auth (Clerk/NextAuth) later.
+// ===== GSF AUTH BRIDGE =====
+// Maps Clerk user data to GSF's AuthUser interface.
+// Clerk is the source of truth for identity.
+// Role and extra profile data live in Clerk's publicMetadata.
 
 export type Role = "founder" | "expert";
 
@@ -9,67 +11,60 @@ export interface AuthUser {
   name: string;
   role: Role;
   credits: number;
-  avatar: string;
+  avatar: string;        // initials fallback e.g. "AS"
+  avatarUrl?: string;    // Clerk profile image URL
   plan: string;
   planExpiresAt?: string;
 }
 
-// ===== MOCK USER DATABASE =====
-const MOCK_USERS: AuthUser[] = [
-  {
-    id: "user_001",
-    email: "abc123@gmail.com",
-    name: "Arjun Sharma",
-    role: "founder",
-    credits: 600,
-    avatar: "AS",
-    plan: "Free Trial",
-  },
-  {
-    id: "user_002",
-    email: "expert@gsf.com",
-    name: "Meera Patel",
-    role: "expert",
-    credits: 420,
-    avatar: "MP",
-    plan: "Expert",
-  },
-];
+// ====================================================================
+// CLIENT-SIDE: call inside "use client" components via useUser() hook
+// ====================================================================
+// Usage:
+//   import { useUser } from "@clerk/nextjs";
+//   import { clerkUserToAuthUser } from "@/lib/auth";
+//   const { user } = useUser();
+//   const authUser = user ? clerkUserToAuthUser(user) : null;
+// ====================================================================
 
-// Password map (email → password)
-const MOCK_PASSWORDS: Record<string, string> = {
-  "abc123@gmail.com": "123456",
-  "expert@gsf.com": "123456",
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function clerkUserToAuthUser(clerkUser: any): AuthUser {
+  const meta = clerkUser.publicMetadata ?? {};
+  const firstName = clerkUser.firstName ?? "";
+  const lastName  = clerkUser.lastName  ?? "";
+  const fullName  = [firstName, lastName].filter(Boolean).join(" ") || clerkUser.username || "User";
+  const initials  = fullName.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+
+  return {
+    id:          clerkUser.id,
+    email:       clerkUser.primaryEmailAddress?.emailAddress ?? "",
+    name:        fullName,
+    role:        (meta.role as Role) ?? "founder",
+    credits:     typeof meta.credits === "number" ? meta.credits : 600,
+    avatar:      initials,
+    avatarUrl:   clerkUser.imageUrl ?? undefined,
+    plan:        (meta.plan as string) ?? "basic",
+    planExpiresAt: meta.planExpiresAt as string | undefined,
+  };
+}
+
+// ====================================================================
+// LEGACY SHIMS — keep working for pages that still use sessionStorage
+// These will be gradually replaced by Clerk hooks.
+// ====================================================================
 
 const SESSION_KEY = "gsf_session";
 
-// ===== AUTH FUNCTIONS =====
-
-export function login(email: string, password: string): AuthUser | null {
-  if (typeof window === "undefined") return null;
-  const expectedPassword = MOCK_PASSWORDS[email.toLowerCase().trim()];
-  if (!expectedPassword || expectedPassword !== password) return null;
-  const user = MOCK_USERS.find((u) => u.email === email.toLowerCase().trim());
-  if (!user) return null;
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  return user;
-}
-
-export function logout() {
+export function setSession(user: AuthUser) {
   if (typeof window === "undefined") return;
-  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
 }
 
 export function getSession(): AuthUser | null {
   if (typeof window === "undefined") return null;
   const raw = sessionStorage.getItem(SESSION_KEY);
   if (!raw) return null;
-  try {
-    return JSON.parse(raw) as AuthUser;
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(raw) as AuthUser; } catch { return null; }
 }
 
 export function updateSession(updates: Partial<AuthUser>) {
@@ -80,9 +75,9 @@ export function updateSession(updates: Partial<AuthUser>) {
   return updated;
 }
 
-export function setSession(user: AuthUser) {
+export function logout() {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+  sessionStorage.removeItem(SESSION_KEY);
 }
 
 export function isAuthenticated(): boolean {
@@ -94,8 +89,7 @@ export function requireRole(role: Role): boolean {
   return user?.role === role;
 }
 
-// ===== REDIRECT PATHS =====
 export const REDIRECT_AFTER_LOGIN: Record<Role, string> = {
   founder: "/dashboard",
-  expert: "/expert-dashboard",
+  expert:  "/expert-dashboard",
 };

@@ -1,163 +1,173 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Compass, Lightbulb, Rocket, Smile, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { Rocket, Star, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import Image from "next/image";
 
-const OPTIONS = [
-  {
-    id: "exploring",
-    icon: Compass,
-    title: "I'm exploring entrepreneurship",
-    description: "I'm curious about startups and want to understand if this path is right for me.",
-    color: "text-primary-600",
-    bg: "bg-primary-50",
-    border: "border-primary-200",
-    activeBg: "bg-primary-50",
-    activeBorder: "border-primary-500",
-  },
-  {
-    id: "has_idea",
-    icon: Lightbulb,
-    title: "I already have an idea",
-    description: "I have a startup idea in mind and want structured support to validate and build it.",
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    activeBg: "bg-amber-50",
-    activeBorder: "border-amber-500",
-  },
-  {
-    id: "building",
-    icon: Rocket,
-    title: "I'm already building something",
-    description: "I have a product or early traction and need expert mentorship and community.",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    activeBg: "bg-emerald-50",
-    activeBorder: "border-emerald-500",
-  },
-  {
-    id: "curious",
-    icon: Smile,
-    title: "Just curious about GSF",
-    description: "I want to see what GSF offers before committing to a cohort.",
-    color: "text-secondary-600",
-    bg: "bg-secondary-50",
-    border: "border-secondary-200",
-    activeBg: "bg-secondary-50",
-    activeBorder: "border-secondary-500",
-  },
-];
+type Role = "founder" | "expert";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { user, isLoaded } = useUser();
+  const { session } = useClerk();
+  const [role, setRole] = useState<Role>("founder");
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
+
+  // If user already has a role set, skip onboarding and redirect
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+    const existingRole = user.publicMetadata?.role as Role | undefined;
+    if (existingRole === "founder" || existingRole === "expert") {
+      // Already onboarded — go to correct dashboard
+      router.replace(existingRole === "expert" ? "/expert-dashboard" : "/dashboard");
+    }
+  }, [isLoaded, user, router]);
 
   async function handleContinue() {
-    if (!selected) return;
-    setLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 800));
-    // Route based on selection
-    if (selected === "building" || selected === "has_idea") {
-      router.push("/student/dashboard");
-    } else {
-      router.push("/student/dashboard");
+    if (!user) return;
+    setSaving(true);
+    try {
+      // Save metadata via API route (Clerk publicMetadata requires server-side update)
+      await fetch("/api/onboarding-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, credits: 600, plan: "basic" }),
+      });
+
+      // Force a reload of the user object so Navbar picks up the new metadata
+      await user.reload();
+      // Also reload the session token
+      await session?.touch();
+
+      setDone(true);
+      setTimeout(() => {
+        router.push(role === "expert" ? "/expert-dashboard" : "/dashboard");
+      }, 1200);
+    } catch {
+      setSaving(false);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 mb-10">
-          <div className="size-9 rounded-xl bg-primary-500 flex items-center justify-center shadow-soft">
-            <span className="text-white font-bold">G</span>
-          </div>
-          <span className="font-semibold text-text-primary text-lg">GSF</span>
-        </div>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-semibold text-text-primary mb-2 flex items-center gap-2">
-            Welcome to GSF <Sparkles className="size-6 text-amber-400" />
-          </h1>
-          <p className="text-text-secondary">
-            Tell us where you are today — we&apos;ll personalize your journey from here.
-          </p>
-        </motion.div>
-
-        {/* Options */}
-        <div className="space-y-3 mb-8">
-          <AnimatePresence>
-            {OPTIONS.map((opt, i) => {
-              const Icon = opt.icon;
-              const isSelected = selected === opt.id;
-              return (
-                <motion.button
-                  key={opt.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  onClick={() => setSelected(opt.id)}
-                  className={cn(
-                    "w-full flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-200",
-                    isSelected
-                      ? `${opt.activeBg} ${opt.activeBorder} shadow-soft`
-                      : `bg-white border-border hover:border-gray-300 hover:bg-gray-50/50`
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "size-11 rounded-xl flex items-center justify-center flex-shrink-0",
-                      isSelected ? opt.bg : "bg-gray-100"
-                    )}
-                  >
-                    <Icon className={cn("size-5", isSelected ? opt.color : "text-text-muted")} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-primary">{opt.title}</p>
-                    <p className="text-sm text-text-secondary mt-0.5 leading-relaxed">{opt.description}</p>
-                  </div>
-                  <div className={cn(
-                    "size-5 rounded-full border-2 ml-auto flex-shrink-0 mt-0.5 flex items-center justify-center transition-all",
-                    isSelected ? `${opt.activeBorder} ${opt.bg}` : "border-gray-300"
-                  )}>
-                    {isSelected && <div className={cn("size-2.5 rounded-full", opt.bg.replace("bg-", "bg-").replace("-50", "-400"))} />}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-
-        {/* Continue */}
-        <Button
-          variant="primary"
-          size="xl"
-          className="w-full"
-          rightIcon={<ArrowRight className="size-5" />}
-          loading={loading}
-          disabled={!selected}
-          onClick={handleContinue}
-        >
-          Continue to dashboard
-        </Button>
-
-        <p className="text-xs text-center text-text-muted mt-5">
-          You can change this at any time in your profile settings.
-        </p>
+  if (!isLoaded || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg-base)" }}>
+        <div className="size-8 rounded-full border-2 border-t-[var(--accent-indigo)] animate-spin" style={{ borderColor: "var(--border-soft)", borderTopColor: "var(--accent-indigo)" }} />
       </div>
-    </div>
+    );
+  }
+
+  const firstName = user.firstName ?? "there";
+
+  return (
+    <main className="min-h-screen flex items-center justify-center pt-6 pb-12 px-4" style={{ backgroundColor: "var(--bg-base)" }}>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 right-1/3 w-96 h-96 rounded-full blur-[120px] opacity-20" style={{ background: "radial-gradient(circle, #5B6CFF, transparent)" }} />
+        <div className="absolute bottom-1/4 left-1/4 w-72 h-72 rounded-full blur-[80px] opacity-15" style={{ background: "radial-gradient(circle, #4FD1C5, transparent)" }} />
+      </div>
+
+      <AnimatePresence mode="wait">
+        {done ? (
+          <motion.div
+            key="done"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10 text-center"
+          >
+            <CheckCircle2 className="size-16 text-emerald-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
+              You&#39;re all set!
+            </h2>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>Taking you to your dashboard…</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10 w-full max-w-md"
+          >
+            {/* Logo + greeting */}
+            <div className="flex flex-col items-center mb-8">
+              <div className="size-14 rounded-2xl overflow-hidden border-2 mb-4 shadow-[0_0_30px_rgba(91,108,255,0.25)]" style={{ borderColor: "rgba(91,108,255,0.35)" }}>
+                <Image src="/gsf-logo.jpeg" alt="GSF" width={56} height={56} className="object-cover w-full h-full" />
+              </div>
+              <h1 className="text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
+                Welcome, {firstName} <Sparkles className="size-5 text-amber-400" />
+              </h1>
+              <p className="text-sm mt-1 text-center" style={{ color: "var(--text-muted)" }}>
+                One last step — tell us how you&#39;re joining GSF
+              </p>
+            </div>
+
+            <div className="card p-8 space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: "var(--text-muted)" }}>I am joining as a</p>
+
+              {/* Role cards */}
+              {([
+                {
+                  value: "founder" as Role,
+                  icon: Rocket,
+                  title: "Founder / Student",
+                  desc: "I want to validate my idea, connect with experts, and build my startup",
+                  color: "var(--accent-indigo)",
+                  bg: "rgba(91,108,255,0.06)",
+                },
+                {
+                  value: "expert" as Role,
+                  icon: Star,
+                  title: "Expert / Mentor",
+                  desc: "I want to mentor founders, earn credits, and contribute my experience",
+                  color: "#F59E0B",
+                  bg: "rgba(245,158,11,0.06)",
+                },
+              ] as { value: Role; icon: typeof Rocket; title: string; desc: string; color: string; bg: string }[]).map(opt => {
+                const isSelected = role === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setRole(opt.value)}
+                    className="w-full p-5 rounded-2xl border-2 text-left transition-all hover:scale-[1.01]"
+                    style={{
+                      borderColor: isSelected ? opt.color : "var(--border-default)",
+                      backgroundColor: isSelected ? opt.bg : "var(--bg-surface-2)",
+                    }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="size-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isSelected ? opt.bg : "var(--bg-surface)", border: `1px solid ${isSelected ? opt.color : "var(--border-soft)"}` }}>
+                        <opt.icon className="size-5" style={{ color: opt.color }} />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm mb-0.5" style={{ color: "var(--text-primary)" }}>{opt.title}</p>
+                        <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{opt.desc}</p>
+                      </div>
+                      {isSelected && <CheckCircle2 className="size-5 ml-auto flex-shrink-0 mt-0.5" style={{ color: opt.color }} />}
+                    </div>
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={handleContinue}
+                disabled={saving}
+                className="btn-primary w-full justify-center py-3 mt-2"
+              >
+                {saving
+                  ? <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  : <><ArrowRight className="size-4" /> Go to Dashboard</>
+                }
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
   );
 }
