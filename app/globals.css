@@ -417,10 +417,13 @@ input, textarea, select { font-family: "Inter", system-ui, sans-serif; }
   align-items: center;
   justify-content: center;
   background: #1A2332;
+  padding: 0;
 }
 .logo-circle img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   object-position: center;
+  display: block;
+  transform: scale(1.05);
 }
