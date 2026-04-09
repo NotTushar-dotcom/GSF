@@ -1,30 +1,64 @@
+"use client";
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { Video, MessageSquare, Calendar, Search, Star, Clock, ArrowRight, Shield, Zap } from "lucide-react";
-
-export const metadata = {
-  title: "Connect — GSF | Video Calls & Chat with Experts",
-  description: "Book 1-on-1 video calls and chat directly with top startup experts on GSF.",
-};
+import { useState, useMemo } from "react";
+import { Video, MessageSquare, Calendar, Search, Star, Clock, ArrowRight, Shield, Zap, Filter } from "lucide-react";
 
 const EXPERTS = [
-  { name: "Dr. Anika Patel", role: "Partner, Sequoia Capital India", domain: "Fundraising & VC", rating: 4.9, sessions: 48, available: true, tags: ["Fundraising", "SaaS", "EdTech"], initials: "AP" },
-  { name: "James Whitfield", role: "Founder (Exited $1B+)", domain: "Scaling & Product", rating: 5.0, sessions: 62, available: true, tags: ["Product", "Scale", "B2B"], initials: "JW" },
-  { name: "Sara Mensah", role: "Director of Product, Stripe", domain: "Product Strategy", rating: 4.8, sessions: 35, available: false, tags: ["APIs", "Growth", "Product"], initials: "SM" },
-  { name: "Yuki Tanaka", role: "Head of Growth, Notion", domain: "Growth & PLG", rating: 4.9, sessions: 41, available: true, tags: ["PLG", "B2C", "Virality"], initials: "YT" },
-  { name: "Raj Devani", role: "Startup Legal Counsel", domain: "Legal & IP", rating: 4.7, sessions: 29, available: true, tags: ["Startup Law", "Equity", "IP"], initials: "RD" },
-  { name: "Fatima Al-Hassan", role: "CEO, MedTech Africa", domain: "Impact & HealthTech", rating: 4.9, sessions: 22, available: false, tags: ["HealthTech", "Impact", "Africa"], initials: "FA" },
+  { name: "Dr. Anika Patel",      initials: "AP", role: "Partner",               company: "Sequoia Capital India",  domain: "Fundraising & VC",     rating: 4.9, sessions: 48,  available: true,  tags: ["Fundraising", "SaaS", "EdTech"],        bg: "#EF4444" },
+  { name: "James Whitfield",      initials: "JW", role: "Co-founder (Exited)",   company: "Razorpay",               domain: "Fintech & Scaling",    rating: 5.0, sessions: 62,  available: true,  tags: ["Product", "Scale", "B2B"],              bg: "#3B82F6" },
+  { name: "Sara Mensah",          initials: "SM", role: "Director of Product",   company: "Stripe",                 domain: "Product Strategy",     rating: 4.8, sessions: 35,  available: false, tags: ["APIs", "Growth", "Product"],            bg: "#10B981" },
+  { name: "Yuki Tanaka",          initials: "YT", role: "Head of Growth",        company: "Notion",                 domain: "Growth & PLG",         rating: 4.9, sessions: 41,  available: true,  tags: ["PLG", "B2C", "Virality"],               bg: "#F59E0B" },
+  { name: "Raj Devani",           initials: "RD", role: "General Counsel",       company: "Y Combinator (S22)",     domain: "Legal & IP",           rating: 4.7, sessions: 29,  available: true,  tags: ["Startup Law", "Equity", "IP"],          bg: "#8B5CF6" },
+  { name: "Fatima Al-Hassan",     initials: "FA", role: "CEO & Founder",         company: "MedTech Africa",         domain: "HealthTech & Impact",  rating: 4.9, sessions: 22,  available: false, tags: ["HealthTech", "Impact", "Africa"],        bg: "#06B6D4" },
+  { name: "Marco Andreessen",     initials: "MA", role: "Principal",             company: "a16z",                   domain: "DeepTech & AI",        rating: 4.8, sessions: 31,  available: true,  tags: ["AI", "DeepTech", "Seed"],               bg: "#6366F1" },
+  { name: "Priya Nakashima",      initials: "PN", role: "Product Lead",          company: "Figma",                  domain: "Design & Product",     rating: 4.9, sessions: 27,  available: true,  tags: ["UX", "Design Systems", "B2B"],          bg: "#EC4899" },
+  { name: "David Osei",           initials: "DO", role: "Engineering Manager",   company: "Google",                 domain: "Engineering & Scale",  rating: 4.7, sessions: 19,  available: false, tags: ["Backend", "ML", "Infrastructure"],       bg: "#14B8A6" },
+  { name: "Rahul Mehta",          initials: "RM", role: "VP Growth",             company: "Zepto",                  domain: "Growth & Q-Commerce",  rating: 4.8, sessions: 38,  available: true,  tags: ["Quick Commerce", "Hyperlocal", "GTM"],  bg: "#F97316" },
+  { name: "Sofia Lindqvist",      initials: "SL", role: "Startup Partner",       company: "Google for Startups",    domain: "Early Stage GTM",      rating: 4.9, sessions: 55,  available: true,  tags: ["GTM", "Community", "Early Stage"],      bg: "#84CC16" },
+  { name: "Arjun Kapoor",         initials: "AK", role: "Partner",               company: "Accel India",            domain: "Seed & Series A",      rating: 4.8, sessions: 44,  available: false, tags: ["Seed", "Consumer", "SaaS"],             bg: "#A855F7" },
+  { name: "Mei Suzuki",           initials: "MS", role: "Head of Business Dev",  company: "OpenAI",                 domain: "AI Commercialisation", rating: 5.0, sessions: 17,  available: true,  tags: ["AI/ML", "Enterprise", "APIs"],          bg: "#0EA5E9" },
+  { name: "Carlos Rodrigues",     initials: "CR", role: "Founder & CTO",         company: "Nubank (acquired)",      domain: "FinTech Engineering",  rating: 4.7, sessions: 23,  available: true,  tags: ["FinTech", "Mobile", "Regulation"],      bg: "#7C3AED" },
+  { name: "Nkechi Okonkwo",       initials: "NO", role: "Director",              company: "Airbnb",                 domain: "Operations & Travel",  rating: 4.8, sessions: 30,  available: true,  tags: ["Ops", "Marketplace", "Trust"],          bg: "#F43F5E" },
+  { name: "Benjamin Park",        initials: "BP", role: "Staff Engineer",        company: "Meta",                   domain: "Systems & Scale",      rating: 4.6, sessions: 15,  available: false, tags: ["Distributed Systems", "Scale", "Data"],  bg: "#1D4ED8" },
+  { name: "Amira Haddad",         initials: "AH", role: "Partner",               company: "Wamda Capital",          domain: "MENA Startups",        rating: 4.9, sessions: 26,  available: true,  tags: ["MENA", "VC", "Social Impact"],          bg: "#D97706" },
+  { name: "Rishi Anand",          initials: "RA", role: "Chief Revenue Officer", company: "Freshworks",             domain: "B2B SaaS Revenue",     rating: 4.8, sessions: 49,  available: true,  tags: ["B2B SaaS", "Sales", "Enterprise"],      bg: "#059669" },
+  { name: "Ingrid Vollmer",       initials: "IV", role: "COO",                   company: "Delivery Hero",          domain: "Ops & Logistics",      rating: 4.7, sessions: 21,  available: false, tags: ["Logistics", "Hyperlocal", "Scale"],     bg: "#DC2626" },
+  { name: "Kevin Zhao",           initials: "KZ", role: "Head of Partnerships",  company: "Shopify",                domain: "E-Commerce & DTC",     rating: 4.9, sessions: 37,  available: true,  tags: ["E-commerce", "DTC", "Partnerships"],    bg: "#16A34A" },
+  { name: "Divya Nair",           initials: "DN", role: "Founding Member",       company: "Ola Electric",           domain: "CleanTech & EVs",      rating: 4.8, sessions: 28,  available: true,  tags: ["CleanTech", "Manufacturing", "EV"],     bg: "#0891B2" },
+  { name: "Luca De Santi",        initials: "LD", role: "Venture Partner",       company: "EQT Ventures",           domain: "Deep Tech Europe",     rating: 4.7, sessions: 18,  available: true,  tags: ["DeepTech", "Hardware", "EU Market"],    bg: "#9333EA" },
+  { name: "Amara Diallo",         initials: "AD", role: "Head of Africa",        company: "IFC (World Bank Group)", domain: "Impact & Development", rating: 5.0, sessions: 13,  available: false, tags: ["Impact", "Africa", "Development"],       bg: "#EA580C" },
+  { name: "Takeshi Mori",         initials: "TM", role: "Angel Investor",        company: "ex-SoftBank Vision",    domain: "Asia Pacific VC",      rating: 4.9, sessions: 33,  available: true,  tags: ["VC", "Asia", "Consumer Tech"],          bg: "#7C3AED" },
 ];
 
+const DOMAINS = ["All domains", "Fundraising & VC", "Product Strategy", "Growth & PLG", "Legal & IP", "HealthTech & Impact", "DeepTech & AI", "Design & Product", "Engineering & Scale", "Fintech & Scaling", "B2B SaaS Revenue", "E-Commerce & DTC", "CleanTech & EVs", "MENA Startups", "Asia Pacific VC"];
+
 const HOW_IT_WORKS = [
-  { step: "01", icon: Search, title: "Find your expert", desc: "Browse by domain — fundraising, product, growth, legal, and more." },
-  { step: "02", icon: Calendar, title: "Book a slot", desc: "Pick an available time. Calendar synced, reminders sent automatically." },
-  { step: "03", icon: Video, title: "Join the video call", desc: "Meet face-to-face in our built-in room — no Zoom account needed." },
-  { step: "04", icon: MessageSquare, title: "Continue via chat", desc: "Follow up, share docs, and get async replies anytime." },
+  { step: "01", icon: Search,        title: "Find your expert",      desc: "Browse by domain — fundraising, product, growth, legal, and more." },
+  { step: "02", icon: Calendar,      title: "Book a slot",           desc: "Pick an available time. Calendar synced, reminders sent automatically." },
+  { step: "03", icon: Video,         title: "Join the video call",   desc: "Meet face-to-face in our built-in room — no Zoom account needed." },
+  { step: "04", icon: MessageSquare, title: "Continue via chat",     desc: "Follow up, share docs, and get async replies anytime." },
 ];
 
 export default function ConnectPage() {
+  const [search, setSearch]       = useState("");
+  const [domain, setDomain]       = useState("All domains");
+  const [availOnly, setAvailOnly] = useState(false);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return EXPERTS.filter(e => {
+      const matchSearch = !q || e.name.toLowerCase().includes(q) || e.domain.toLowerCase().includes(q)
+        || e.company.toLowerCase().includes(q) || e.role.toLowerCase().includes(q)
+        || e.tags.some(t => t.toLowerCase().includes(q));
+      const matchDomain = domain === "All domains" || e.domain === domain;
+      const matchAvail  = !availOnly || e.available;
+      return matchSearch && matchDomain && matchAvail;
+    });
+  }, [search, domain, availOnly]);
+
   return (
     <>
       <Navbar />
@@ -39,9 +73,8 @@ export default function ConnectPage() {
               <Video className="size-3.5" />
               Live Video + Chat — Built for founders
             </span>
-            <h1 className="text-5xl sm:text-6xl text-[#1A2332] tracking-tight mb-6"
-              style={{ fontFamily: "'Playfair Display', serif" }}>
-              Talk to experts who've{" "}
+            <h1 className="text-5xl sm:text-6xl text-[#1A2332] tracking-tight mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Talk to experts who&apos;ve{" "}
               <em className="not-italic text-gradient-primary">actually built it</em>
             </h1>
             <p className="text-xl text-[#4A5668] max-w-2xl mx-auto mb-8">
@@ -50,7 +83,7 @@ export default function ConnectPage() {
             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white border border-[#D2C4B4] shadow-soft-sm mb-12">
               <Shield className="size-5 text-[#81A6C6]" />
               <span className="text-sm text-[#4A5668]">
-                <span className="text-[#1A2332] font-semibold">Free for 30 days</span> — full access. Then from ₹499/month.
+                <span className="text-[#1A2332] font-semibold">Basic plan free for 30 days</span> — full access. Then from ₹499/month.
               </span>
             </div>
           </div>
@@ -62,8 +95,7 @@ export default function ConnectPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
               <div key={step} className="card p-6 relative">
-                <div className="text-4xl font-bold text-[#F3E3D0] absolute top-4 right-4 select-none"
-                  style={{ fontFamily: "'Playfair Display', serif" }}>{step}</div>
+                <div className="text-4xl font-bold text-[#F3E3D0] absolute top-4 right-4 select-none" style={{ fontFamily: "'Playfair Display', serif" }}>{step}</div>
                 <div className="size-10 rounded-xl bg-[#EEF4F9] border border-[#AACDDC] flex items-center justify-center mb-4">
                   <Icon className="size-5 text-[#81A6C6]" />
                 </div>
@@ -77,35 +109,65 @@ export default function ConnectPage() {
         {/* Expert listing */}
         <section className="bg-[#F7F2EC] border-y border-[#D2C4B4] py-16">
           <div className="section-container">
-            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+            {/* Search + filters */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#8A95A3]" />
-                <input id="expert-search" type="text" placeholder="Search experts by name or domain..." className="input pl-10" />
+                <input
+                  id="expert-search"
+                  type="text"
+                  placeholder="Search by name, company, or expertise..."
+                  className="input pl-10"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
               </div>
-              <select id="domain-filter" className="input sm:w-48">
-                <option>All domains</option>
-                <option>Fundraising & VC</option>
-                <option>Product Strategy</option>
-                <option>Growth & PLG</option>
-                <option>Legal & IP</option>
+              <select
+                id="domain-filter"
+                className="input sm:w-56"
+                value={domain}
+                onChange={e => setDomain(e.target.value)}
+              >
+                {DOMAINS.map(d => <option key={d}>{d}</option>)}
               </select>
+              <button
+                onClick={() => setAvailOnly(v => !v)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all whitespace-nowrap ${availOnly ? "bg-green-600 text-white border-green-600" : "bg-white text-[#4A5668] border-[#D2C4B4] hover:border-[#81A6C6]"}`}
+              >
+                <Zap className="size-3.5" />
+                Available only
+              </button>
             </div>
 
+            {/* Results count */}
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-[#4A5668]">
+                Showing <strong className="text-[#1A2332]">{filtered.length}</strong> of <strong className="text-[#1A2332]">{EXPERTS.length}</strong> experts
+              </p>
+              <div className="flex items-center gap-1.5 text-xs text-[#8A95A3]">
+                <Filter className="size-3.5" />
+                {domain !== "All domains" || search || availOnly ? "Filtered" : "All experts"}
+              </div>
+            </div>
+
+            {/* Expert grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {EXPERTS.map((expert) => (
+              {filtered.map((expert) => (
                 <div key={expert.name} className="card p-6 card-hover flex flex-col gap-4 bg-white">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="size-11 rounded-full bg-[#EEF4F9] border border-[#AACDDC] flex items-center justify-center text-sm font-bold text-[#3D74A0]">
+                      <div className="size-12 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                        style={{ background: `linear-gradient(135deg, ${expert.bg}, ${expert.bg}bb)` }}>
                         {expert.initials}
                       </div>
                       <div>
                         <h3 className="font-semibold text-[#1A2332] text-sm">{expert.name}</h3>
                         <p className="text-xs text-[#4A5668]">{expert.role}</p>
+                        <p className="text-xs font-semibold text-[#3D74A0] mt-0.5">{expert.company}</p>
                         <span className="badge badge-blue mt-1 text-[10px]">{expert.domain}</span>
                       </div>
                     </div>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${expert.available ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-[#F3E3D0] text-[#8A95A3]'}`}>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${expert.available ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F3E3D0] text-[#8A95A3]"}`}>
                       {expert.available ? "● Available" : "Busy"}
                     </span>
                   </div>
@@ -132,6 +194,16 @@ export default function ConnectPage() {
                 </div>
               ))}
             </div>
+
+            {filtered.length === 0 && (
+              <div className="text-center py-20">
+                <Search className="size-12 text-[#D2C4B4] mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-[#1A2332] mb-2">No experts found</h3>
+                <p className="text-sm text-[#8A95A3]">Try adjusting your search or filters.</p>
+                <button onClick={() => { setSearch(""); setDomain("All domains"); setAvailOnly(false); }}
+                  className="mt-4 btn-outline text-sm py-2 px-4">Clear filters</button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -141,56 +213,36 @@ export default function ConnectPage() {
             Simple, transparent pricing
           </h2>
           <p className="text-[#4A5668] mb-12 max-w-lg mx-auto">
-            Start free. Scale when you're ready.
+            Basic plan free for 30 days. Upgrade to unlock senior experts.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
             {[
               {
-                name: "Free Trial",
-                price: "₹0",
-                period: "30 days",
-                credits: "600 credits (Basic access)",
-                autoPayNote: "→ Auto-converts to Basic after 30 days",
-                experienceRange: "0–2 yr experts only",
-                features: ["600 credits", "0–2 yr experience experts", "Venture marketplace", "Community access"],
-                highlight: false, trialBadge: true,
+                name: "Basic", price: "₹499", period: "/month",
+                credits: "600 credits / month", autoPayNote: "Auto-pay enabled · Free first 30 days",
+                experienceRange: "0–10 yrs experience experts",
+                features: ["600 credits", "Expert access: 0–10 yrs exp", "Venture marketplace", "Community access"],
+                highlight: false, freeBadge: true,
               },
               {
-                name: "Basic",
-                price: "₹499",
-                period: "/month",
-                credits: "600 credits / month",
-                autoPayNote: "⚡ Auto-pay enabled",
-                experienceRange: "0–2 yr experts only",
-                features: ["600 credits", "0–2 yr experience experts", "Venture marketplace", "Community access"],
-                highlight: false, trialBadge: false,
+                name: "Standard", price: "₹999", period: "/month",
+                credits: "1,500 credits / month", autoPayNote: "Auto-pay enabled",
+                experienceRange: "10–15 yrs experience experts",
+                features: ["1,500 credits", "Expert access: 10–15 yrs exp", "Priority booking", "All Basic features"],
+                highlight: true, freeBadge: false,
               },
               {
-                name: "Standard",
-                price: "₹999",
-                period: "/month",
-                credits: "1,500 credits / month",
-                autoPayNote: "⚡ Auto-pay enabled",
-                experienceRange: "2–5 yr experts",
-                features: ["1,500 credits", "2–5 yr experience experts", "Priority booking", "All Basic features"],
-                highlight: true, trialBadge: false,
-              },
-              {
-                name: "Premium",
-                price: "₹1,499",
-                period: "/month",
-                credits: "2,000 credits / month",
-                autoPayNote: "⚡ Auto-pay enabled",
-                experienceRange: "5+ yr senior experts",
-                features: ["2,000 credits", "5+ yr senior experts", "Investor intros", "All Standard features"],
-                highlight: false, trialBadge: false,
+                name: "Premium", price: "₹1,499", period: "/month",
+                credits: "2,000 credits / month", autoPayNote: "Auto-pay enabled",
+                experienceRange: "15+ yrs · GSF exclusive experts",
+                features: ["2,000 credits", "Exclusive GSF experts: 15+ yrs", "Investor intros", "All Standard features"],
+                highlight: false, freeBadge: false,
               },
             ].map((plan) => (
-              <div key={plan.name} className={`card p-6 flex flex-col ${plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]' : ''
-                }`}>
-                {plan.trialBadge && <span className="badge badge-warm text-xs mb-3 w-fit">Start here</span>}
+              <div key={plan.name} className={`card p-6 flex flex-col ${plan.highlight ? "border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]" : ""}`}>
+                {plan.freeBadge && <span className="badge badge-warm text-xs mb-3 w-fit">Free first 30 days</span>}
                 {plan.highlight && <span className="badge badge-blue text-xs mb-3 w-fit">Most Popular</span>}
-                <div className="font-semibold text-[#1A2332] mb-1">{plan.name}</div>
+                <div className="font-bold text-lg text-[#1A2332] mb-1">{plan.name}</div>
                 <div className="mb-1">
                   <span className="text-2xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.price}</span>
                   <span className="text-xs text-[#8A95A3] ml-1">{plan.period}</span>
@@ -208,7 +260,8 @@ export default function ConnectPage() {
                   ))}
                 </ul>
                 <Link href="/sign-up" className={plan.highlight ? "btn-primary justify-center text-sm" : "btn-outline justify-center text-sm"}>
-                  {plan.trialBadge ? 'Get started free' : 'Choose plan'}
+                  <ArrowRight className="size-3.5" />
+                  {plan.freeBadge ? "Start free — 30 days" : "Choose plan"}
                 </Link>
               </div>
             ))}

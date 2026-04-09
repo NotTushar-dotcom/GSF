@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Lightbulb } from "lucide-react";
+import { ArrowRight, Lightbulb, Search, BarChart2, Rocket, DollarSign, Building2, TrendingUp } from "lucide-react";
 
 const container = {
   hidden: {},
@@ -14,13 +14,13 @@ const item = {
 };
 
 const JOURNEY_STAGES = [
-  { emoji: "💡", label: "Ideation", shortLabel: "Ideation" },
-  { emoji: "🔍", label: "Idea Screening", shortLabel: "Screening" },
-  { emoji: "📊", label: "Market Research", shortLabel: "Research" },
-  { emoji: "🚀", label: "MVP", shortLabel: "MVP" },
-  { emoji: "💰", label: "Investment & Funding", shortLabel: "Funding" },
-  { emoji: "🏢", label: "Company Launch", shortLabel: "Launch" },
-  { emoji: "📈", label: "Product-Market Fit", shortLabel: "PMF" },
+  { icon: Lightbulb, label: "Ideation", shortLabel: "Ideation" },
+  { icon: Search, label: "Idea Screening", shortLabel: "Screening" },
+  { icon: BarChart2, label: "Market Research", shortLabel: "Research" },
+  { icon: Rocket, label: "MVP", shortLabel: "MVP" },
+  { icon: DollarSign, label: "Investment & Funding", shortLabel: "Funding" },
+  { icon: Building2, label: "Company Launch", shortLabel: "Launch" },
+  { icon: TrendingUp, label: "Product-Market Fit", shortLabel: "PMF" },
 ];
 
 export function HeroSection() {
@@ -36,7 +36,7 @@ export function HeroSection() {
           <motion.div variants={item} className="mb-8">
             <span className="badge badge-blue text-xs">
               <span className="size-1.5 rounded-full bg-[#81A6C6]" />
-              Free for 30 days · No credit card required
+              Basic plan free for first 30 days · No credit card required
             </span>
           </motion.div>
 
@@ -69,17 +69,20 @@ export function HeroSection() {
               Where are you in your founder journey?
             </p>
             <div className="flex flex-wrap gap-2">
-              {JOURNEY_STAGES.map((stage) => (
-                <button
-                  key={stage.label}
-                  className="group flex items-center gap-2 px-3 py-2 rounded-xl border border-[#D2C4B4] bg-white hover:border-[#81A6C6] hover:bg-[#EEF4F9] transition-all duration-150 cursor-pointer shadow-soft-sm"
-                >
-                  <span className="text-sm">{stage.emoji}</span>
-                  <span className="text-xs font-semibold text-[#1A2332] group-hover:text-[#3D74A0]">
-                    {stage.shortLabel}
-                  </span>
-                </button>
-              ))}
+              {JOURNEY_STAGES.map((stage) => {
+                const Icon = stage.icon;
+                return (
+                  <button
+                    key={stage.label}
+                    className="group flex items-center gap-2 px-3 py-2 rounded-xl border border-[#D2C4B4] bg-white hover:border-[#81A6C6] hover:bg-[#EEF4F9] transition-all duration-150 cursor-pointer shadow-soft-sm"
+                  >
+                    <Icon className="size-3.5 text-[#81A6C6] group-hover:text-[#3D74A0]" />
+                    <span className="text-xs font-semibold text-[#1A2332] group-hover:text-[#3D74A0]">
+                      {stage.shortLabel}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <p className="text-xs text-[#8A95A3] mt-3">
               Select your stage — we personalise your GSF experience.

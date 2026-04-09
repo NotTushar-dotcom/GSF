@@ -171,7 +171,7 @@ export default function ExpertsPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-4xl mb-3">🔍</p>
+            <Search className="size-10 text-[var(--text-muted)] mx-auto mb-3" />
             <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>No experts found</p>
             <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Try adjusting your filters</p>
           </div>

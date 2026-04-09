@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { getSession } from "@/lib/auth";
-import { Coins, ArrowUpRight, BarChart2, TrendingUp, Zap } from "lucide-react";
+import { Coins, ArrowUpRight, BarChart2, TrendingUp, Zap, CreditCard, ShoppingBag, Star } from "lucide-react";
 
 const TRANSACTIONS = [
   { id: 1, type: "credit", amount: 80,  reason: "Session completed: Arjun Sharma (EduLoop)",      date: "Apr 8, 2026",  balance: 420 },
@@ -15,9 +15,9 @@ const TRANSACTIONS = [
 ];
 
 const REDEEM_OPTIONS = [
-  { label: "UPI Transfer",     value: "₹1,680",  credits: 420, icon: "💳" },
-  { label: "Amazon Gift Card", value: "₹1,500",  credits: 420, icon: "🛍️" },
-  { label: "GSF Premium",      value: "1 month", credits: 200, icon: "⭐" },
+  { label: "UPI Transfer",     value: "₹1,680",  credits: 420, icon: CreditCard },
+  { label: "Amazon Gift Card", value: "₹1,500",  credits: 420, icon: ShoppingBag },
+  { label: "GSF Premium",      value: "1 month", credits: 200, icon: Star },
 ];
 
 const fadeUp = (d = 0) => ({
@@ -139,7 +139,7 @@ export default function ExpertCreditsPage() {
             {REDEEM_OPTIONS.map(opt => (
               <div key={opt.label} className="p-4 rounded-2xl border text-center cursor-pointer hover-scale transition-all"
                 style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-default)" }}>
-                <p className="text-2xl mb-2">{opt.icon}</p>
+                <opt.icon className="size-6 mx-auto mb-2" style={{ color: "#4FD1C5" }} />
                 <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{opt.label}</p>
                 <p className="text-lg font-bold mt-0.5" style={{ color: "#4FD1C5" }}>{opt.value}</p>
                 <p className="text-[10px] mt-0.5 mb-3" style={{ color: "var(--text-muted)" }}>{opt.credits} credits</p>

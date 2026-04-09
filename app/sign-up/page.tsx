@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Eye, EyeOff, Rocket, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Rocket, CheckCircle2, Star } from "lucide-react";
 import { setSession } from "@/lib/auth";
 
 function GoogleIcon() {
@@ -148,7 +148,9 @@ export default function SignUpPage() {
                           style={role === r
                             ? { border: "2px solid var(--accent-indigo)", backgroundColor: "rgba(91,108,255,0.08)" }
                             : { border: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface-2)" }}>
-                          <span className="text-xl mb-1">{r === "founder" ? "🚀" : "⭐"}</span>
+                          {r === "founder"
+                            ? <Rocket className="size-5 mb-1 text-[var(--accent-indigo)]" />
+                            : <Star className="size-5 mb-1 text-amber-400" />}
                           <span className="text-xs font-semibold capitalize" style={{ color: "var(--text-primary)" }}>{r}</span>
                         </button>
                       ))}
@@ -348,7 +350,9 @@ export default function SignUpPage() {
                     ))}
                   </div>
                   <div className="p-4 rounded-2xl" style={{ backgroundColor: "rgba(91,108,255,0.06)", border: "1px solid rgba(91,108,255,0.15)" }}>
-                    <p className="text-xs font-semibold mb-1" style={{ color: "var(--accent-indigo)" }}>🎉 Your 30-day free trial starts now</p>
+                    <p className="text-xs font-semibold mb-1 flex items-center gap-1.5" style={{ color: "var(--accent-indigo)" }}>
+                      <CheckCircle2 className="size-3.5" /> Your Basic plan is free for 30 days
+                    </p>
                     <p className="text-xs" style={{ color: "var(--text-muted)" }}>600 credits included. Auto-converts to Basic (₹499/mo) unless cancelled.</p>
                   </div>
                 </div>

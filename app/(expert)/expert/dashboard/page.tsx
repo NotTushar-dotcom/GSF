@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ArrowRight,
   Bell,
+  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -55,8 +56,8 @@ export default function ExpertDashboardPage() {
       {/* Header */}
       <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary">
-            Welcome back, Meera 👋
+          <h1 className="text-2xl font-semibold text-text-primary flex items-center gap-2">
+            Welcome back, Meera <Sparkles className="size-5 text-amber-400" />
           </h1>
           <p className="text-text-secondary mt-1">
             You have 2 pending reviews and 3 sessions this week.

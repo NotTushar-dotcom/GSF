@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   CheckCircle2, TrendingUp, Clock, Coins, ArrowRight,
   Calendar, Lightbulb, ChevronRight, Zap, Target, Users,
-  BarChart2, Star, Plus, Video,
+  BarChart2, Star, Plus, Video, Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { getSession } from "@/lib/auth";
@@ -187,7 +187,7 @@ function CreditWallet({ credits }: { credits: number }) {
             {displayed.toLocaleString()}
           </motion.p>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-            Free Trial Plan · Resets in 22 days
+            Basic Plan · Free for 22 more days
           </p>
         </div>
       </div>
@@ -235,8 +235,9 @@ export default function FounderDashboardPage() {
         {/* Welcome header */}
         <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
-              Good evening, {user?.name?.split(" ")[0] ?? "Founder"} 👋
+            <h1 className="text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
+              Good evening, {user?.name?.split(" ")[0] ?? "Founder"}
+              <Sparkles className="size-5 text-amber-400" />
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               You&apos;re in the <strong>Research</strong> stage. Customer discovery awaits.
@@ -245,7 +246,7 @@ export default function FounderDashboardPage() {
           <div className="flex items-center gap-2">
             <span className="badge badge-blue">
               <span className="size-1.5 rounded-full bg-blue-400" />
-              Free Trial — 22 days left
+              Basic Plan — 22 days free
             </span>
           </div>
         </motion.div>

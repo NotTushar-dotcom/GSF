@@ -202,10 +202,10 @@ export default function InsightsPage() {
                   </div>
                   <div className="hidden lg:flex items-center justify-center">
                     <div
-                      className="size-48 rounded-full flex items-center justify-center text-6xl"
+                      className="size-48 rounded-full flex items-center justify-center"
                       style={{ background: `${featured.accentColor}18`, border: `2px solid ${featured.accentColor}30` }}
                     >
-                      📍
+                      <BookOpen className="size-16" style={{ color: featured.accentColor, opacity: 0.7 }} />
                     </div>
                   </div>
                 </div>

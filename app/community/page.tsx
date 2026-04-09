@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { ArrowUp, ArrowDown, MessageSquare, Share2, Bookmark, PenSquare, TrendingUp, Clock, Flame, Search } from "lucide-react";
+import React from "react";
+import { ArrowUp, ArrowDown, MessageSquare, Share2, Bookmark, PenSquare, TrendingUp, Clock, Flame, Search, Lightbulb, BarChart2, Rocket, DollarSign, Building2, Pin, Briefcase, Star, Users } from "lucide-react";
 
 const AVATAR_COLORS = [
   { bg: "#DBEAFE", text: "#1E40AF" },
@@ -35,14 +36,14 @@ type Post = {
   userVote?: 1 | -1 | null;
 };
 
-const STAGE_STYLES: Record<string, { bg: string; text: string; emoji: string }> = {
-  "Ideation":            { bg: "#FEF3C7", text: "#92400E", emoji: "💡" },
-  "Idea Screening":      { bg: "#EDE9FE", text: "#5B21B6", emoji: "🔍" },
-  "Market Research":     { bg: "#DBEAFE", text: "#1E40AF", emoji: "📊" },
-  "MVP":                 { bg: "#D1FAE5", text: "#065F46", emoji: "🚀" },
-  "Investment & Funding":{ bg: "#FEF9C3", text: "#713F12", emoji: "💰" },
-  "Company Launch":      { bg: "#EEF4F9", text: "#1E3A5F", emoji: "🏢" },
-  "Product-Market Fit":  { bg: "#F0FDF4", text: "#14532D", emoji: "📈" },
+const STAGE_STYLES: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+  "Ideation":            { bg: "#FEF3C7", text: "#92400E", icon: Lightbulb },
+  "Idea Screening":      { bg: "#EDE9FE", text: "#5B21B6", icon: Search },
+  "Market Research":     { bg: "#DBEAFE", text: "#1E40AF", icon: BarChart2 },
+  "MVP":                 { bg: "#D1FAE5", text: "#065F46", icon: Rocket },
+  "Investment & Funding":{ bg: "#FEF9C3", text: "#713F12", icon: DollarSign },
+  "Company Launch":      { bg: "#EEF4F9", text: "#1E3A5F", icon: Building2 },
+  "Product-Market Fit":  { bg: "#F0FDF4", text: "#14532D", icon: TrendingUp },
 };
 
 const ROLE_STYLES: Record<string, string> = {
@@ -210,8 +211,8 @@ export default function CommunityPage() {
               return (
                 <div key={post.id} className={`bg-white rounded-2xl border ${post.pinned ? "border-[#AACDDC]" : "border-[#D2C4B4]"} overflow-hidden hover:border-[#81A6C6] transition-colors group`}>
                   {post.pinned && (
-                    <div className="bg-[#EEF4F9] border-b border-[#AACDDC] px-4 py-2 text-xs font-semibold text-[#3D74A0]">
-                      📌 Pinned post
+                    <div className="bg-[#EEF4F9] border-b border-[#AACDDC] px-4 py-2 text-xs font-semibold text-[#3D74A0] flex items-center gap-1.5">
+                      <Pin className="size-3" /> Pinned post
                     </div>
                   )}
                   <div className="flex">
@@ -241,8 +242,8 @@ export default function CommunityPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-sm font-semibold text-[#1A2332]">{post.author}</span>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${ROLE_STYLES[post.roleType]}`}>
-                              {post.roleType === "founder" ? "🧑‍💼" : post.roleType === "expert" ? "⭐" : "💼"} {post.role}
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border flex items-center gap-1 ${ROLE_STYLES[post.roleType]}`}>
+                              {post.roleType === "founder" ? <Briefcase className="size-2.5" /> : post.roleType === "expert" ? <Star className="size-2.5" /> : <Users className="size-2.5" />} {post.role}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-[10px] text-[#8A95A3] mt-0.5">
@@ -250,9 +251,9 @@ export default function CommunityPage() {
                             {stageStyle && (
                               <>
                                 <span>·</span>
-                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium"
+                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1"
                                   style={{ background: stageStyle.bg, color: stageStyle.text }}>
-                                  {stageStyle.emoji} {post.stage}
+                                  <stageStyle.icon className="size-2.5" /> {post.stage}
                                 </span>
                               </>
                             )}
@@ -292,7 +293,7 @@ export default function CommunityPage() {
 
             {filtered.length === 0 && (
               <div className="bg-white rounded-2xl border border-[#D2C4B4] p-16 text-center">
-                <div className="text-4xl mb-4">💬</div>
+                <MessageSquare className="size-10 text-[#8A95A3] mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-[#1A2332] mb-2">No posts found</h3>
                 <p className="text-sm text-[#8A95A3]">Try a different tag or search term.</p>
               </div>

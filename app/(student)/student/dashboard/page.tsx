@@ -11,6 +11,7 @@ import {
   BookOpen,
   Lightbulb,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -49,8 +50,8 @@ export default function StudentDashboardPage() {
       {/* Welcome */}
       <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary">
-            Good morning, Arjun 👋
+          <h1 className="text-2xl font-semibold text-text-primary flex items-center gap-2">
+            Good morning, Arjun <Sparkles className="size-5 text-amber-400" />
           </h1>
           <p className="text-text-secondary mt-1">
             You&apos;re on Module 4 of 6. Keep the momentum going!

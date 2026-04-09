@@ -9,14 +9,14 @@ import Link from "next/link";
 
 const TRANSACTIONS = [
   { id: 1, type: "debit",  amount: 100, reason: "Session booked: Meera Patel",   date: "Apr 8, 2026",  balance: 500 },
-  { id: 2, type: "credit", amount: 100, reason: "Plan started: Free Trial",       date: "Apr 1, 2026",  balance: 600 },
-  { id: 3, type: "credit", amount: 600, reason: "Free Trial credits granted",     date: "Apr 1, 2026",  balance: 600 },
+  { id: 2, type: "credit", amount: 100, reason: "Plan started: Basic (30-day free)", date: "Apr 1, 2026",  balance: 600 },
+  { id: 3, type: "credit", amount: 600, reason: "Basic plan credits granted",    date: "Apr 1, 2026",  balance: 600 },
 ];
 
 const PLANS = [
-  { name: "Basic",    price: "₹499",  credits: 600,  period: "/month", current: true,  color: "#3B82F6", exp: "0–10 yrs",  badge: "Most Popular", features: ["600 credits/month", "Expert access (0–10 yrs exp)", "Venture marketplace", "Community", "30-day free trial included"] },
-  { name: "Standard", price: "₹999",  credits: 1500, period: "/month", current: false, color: "#10B981", exp: "10+ yrs",   badge: null,           features: ["1,500 credits/month", "Expert access (10+ yrs exp)", "Priority booking", "All Basic features"] },
-  { name: "Premium",  price: "₹1,499",credits: 2000, period: "/month", current: false, color: "#F59E0B", exp: "15+ yrs exclusive", badge: "Top Tier", features: ["2,000 credits/month", "Exclusive expert access (15+yr)", "Investor intros", "Dedicated advisor", "All Standard features"] },
+  { name: "Basic",    price: "₹499",   credits: 600,  period: "/month", current: true,  color: "#3B82F6", exp: "0–10 yrs",              badge: "Free 30 days", features: ["600 credits/month", "Expert access (0–10 yrs exp)", "Venture marketplace", "Community", "Free for first 30 days"] },
+  { name: "Standard", price: "₹999",   credits: 1500, period: "/month", current: false, color: "#10B981", exp: "10–15 yrs",            badge: null,           features: ["1,500 credits/month", "Expert access (10–15 yrs exp)", "Priority booking", "All Basic features"] },
+  { name: "Premium",  price: "₹1,499", credits: 2000, period: "/month", current: false, color: "#F59E0B", exp: "15+ yrs · GSF exclusive", badge: "Top Tier",     features: ["2,000 credits/month", "Exclusive GSF experts (15+ yrs)", "Investor intros", "Dedicated advisor", "All Standard features"] },
 ];
 
 const fadeUp = (d = 0) => ({
@@ -64,7 +64,7 @@ export default function CreditsPage() {
                 </span>
                 <span className="text-gray-400 mb-2">credits</span>
               </div>
-              <p className="text-sm text-gray-400 mt-1">Free Trial · Resets in 22 days</p>
+              <p className="text-sm text-gray-400 mt-1">Basic Plan · Free trial · Resets in 22 days</p>
             </div>
 
             <div className="sm:ml-auto w-full sm:w-64">
@@ -146,7 +146,7 @@ export default function CreditsPage() {
           style={{ backgroundColor: "rgba(91,108,255,0.06)", border: "1px solid rgba(91,108,255,0.15)" }}>
           <Zap className="size-4 mt-0.5 flex-shrink-0" style={{ color: "var(--accent-indigo)" }} />
           <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>🎉 You&apos;re on the free 30-day trial</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Your Basic plan is free for 30 days</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
               After 30 days, your account automatically converts to the <strong>Basic plan (₹499/month)</strong>. Cancel anytime before then — no questions asked.
             </p>

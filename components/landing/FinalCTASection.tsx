@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock, Zap, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -53,12 +53,13 @@ export function FinalCTASection() {
             {/* Trust indicators */}
             <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
               {[
-                "🔒 No credit card required",
-                "⚡ 6-week structured cohort",
-                "💬 Expert mentor access",
-              ].map((item) => (
-                <span key={item} className="text-sm text-white/70">
-                  {item}
+                { icon: Lock, label: "No credit card required" },
+                { icon: Zap, label: "6-week structured cohort" },
+                { icon: MessageSquare, label: "Expert mentor access" },
+              ].map(({ icon: Icon, label }) => (
+                <span key={label} className="flex items-center gap-1.5 text-sm text-white/70">
+                  <Icon className="size-3.5 text-white/50" />
+                  {label}
                 </span>
               ))}
             </div>

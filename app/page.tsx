@@ -3,7 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { IntroAnimationWrapper } from "@/components/landing/IntroAnimation";
 import Link from "next/link";
-import { Video, Lightbulb, Users, ArrowRight } from "lucide-react";
+import { Video, Lightbulb, Users, ArrowRight, Shield, Star, Crown } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -21,7 +21,7 @@ export default function HomePage() {
                 Two platforms. One mission.
               </h2>
               <p className="text-[#4A5668] text-lg max-w-xl mx-auto">
-                Connect with experts who've done it. Fund the ideas that will shape tomorrow.
+                Connect with experts who&apos;ve done it. Fund the ideas that will shape tomorrow.
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -72,7 +72,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Revenue model */}
+        {/* Subscription plans */}
         <section className="section-container section-padding">
           <div className="text-center mb-14">
             <span className="badge badge-blue mb-4">
@@ -80,95 +80,136 @@ export default function HomePage() {
             </span>
             <h2 className="text-4xl font-bold text-[#1A2332] mb-4"
               style={{ fontFamily: "'Playfair Display', serif" }}>
-              We only earn when you build
+              Choose your plan
             </h2>
             <p className="text-[#4A5668] max-w-xl mx-auto">
-              No hidden fees. No inflated subscriptions. A model that aligns our incentives with yours.
+              Start with Basic free for your first 30 days. Upgrade anytime to unlock senior experts and exclusive GSF access.
             </p>
           </div>
-          {/* Credit / subscription plans */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+          {/* 3–plan grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              {
-                name: "Free Trial",
-                price: "₹0",
-                period: "30 days",
-                credits: "600 credits (Basic access)",
-                autoPayNote: "→ Auto-converts to Basic after 30 days",
-                experienceRange: "0–2 yr experts only",
-                features: ["600 credits / month", "0–2 yr experience experts", "Venture marketplace", "Community access"],
-                highlight: false,
-                trialBadge: true,
-              },
               {
                 name: "Basic",
                 price: "₹499",
                 period: "/month",
-                credits: "600 credits",
-                autoPayNote: "Auto-pay enabled",
-                expertise: "Early-stage experts",
-                experienceRange: "0–2 yrs experience",
-                features: ["600 credits / month", "0–2 yr experience experts", "Venture marketplace", "Community access"],
+                freeBadge: true,
+                credits: "600 credits / month",
+                experienceRange: "0–10 yrs experience experts",
+                icon: Shield,
+                iconColor: "text-[#81A6C6]",
+                iconBg: "bg-[#EEF4F9] border-[#AACDDC]",
+                features: [
+                  "600 credits / month",
+                  "Connect with experts: 0–10 yrs experience",
+                  "Venture marketplace access",
+                  "Community & peer circles",
+                ],
                 highlight: false,
-                trialBadge: false,
+                cta: "Start free — 30 days",
+                ctaHref: "/sign-up",
               },
               {
                 name: "Standard",
                 price: "₹999",
                 period: "/month",
-                credits: "1,500 credits",
-                autoPayNote: "Auto-pay enabled",
-                expertise: "Mid-level experts",
-                experienceRange: "2–5 yrs experience",
-                features: ["1,500 credits / month", "2–5 yr experience experts", "Priority booking", "All Basic features"],
+                freeBadge: false,
+                credits: "1,500 credits / month",
+                experienceRange: "10–15 yrs experience experts",
+                icon: Star,
+                iconColor: "text-[#3D74A0]",
+                iconBg: "bg-[#DCEEF8] border-[#81A6C6]",
+                features: [
+                  "1,500 credits / month",
+                  "Connect with experts: 10–15 yrs experience",
+                  "Priority booking slots",
+                  "All Basic features",
+                ],
                 highlight: true,
-                trialBadge: false,
+                cta: "Choose Standard",
+                ctaHref: "/sign-up",
               },
               {
                 name: "Premium",
                 price: "₹1,499",
                 period: "/month",
-                credits: "2,000 credits",
-                autoPayNote: "Auto-pay enabled",
-                expertise: "Senior experts",
-                experienceRange: "5+ yrs experience",
-                features: ["2,000 credits / month", "5+ yr experience experts", "Investor intros", "All Standard features"],
+                freeBadge: false,
+                credits: "2,000 credits / month",
+                experienceRange: "15+ yrs · GSF exclusive experts",
+                icon: Crown,
+                iconColor: "text-[#5B4A3A]",
+                iconBg: "bg-[#F3E3D0] border-[#D2C4B4]",
+                features: [
+                  "2,000 credits / month",
+                  "Exclusive GSF experts: 15+ yrs experience",
+                  "Investor introductions",
+                  "All Standard features",
+                ],
                 highlight: false,
-                trialBadge: false,
+                cta: "Choose Premium",
+                ctaHref: "/sign-up",
               },
-            ].map((plan) => (
-              <div key={plan.name} className={`card p-6 flex flex-col card-hover ${
-                plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]' : ''
-              }`}>
-                {plan.trialBadge && <span className="badge badge-warm text-xs mb-3 w-fit">Start here</span>}
-                {plan.highlight && <span className="badge badge-blue text-xs mb-3 w-fit">Popular</span>}
-                <div className="font-semibold text-[#1A2332] mb-1">{plan.name}</div>
-                <div className="mb-1">
-                  <span className="text-2xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.price}</span>
-                  <span className="text-xs text-[#8A95A3] ml-1">{plan.period}</span>
-                </div>
-                {plan.credits && (
+            ].map((plan) => {
+              const PlanIcon = plan.icon;
+              return (
+                <div
+                  key={plan.name}
+                  className={`card p-6 flex flex-col card-hover ${
+                    plan.highlight
+                      ? "border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.22)] relative"
+                      : ""
+                  }`}
+                >
+                  {plan.highlight && (
+                    <span className="badge badge-blue text-xs mb-3 w-fit">Most Popular</span>
+                  )}
+                  {plan.freeBadge && (
+                    <span className="badge badge-warm text-xs mb-3 w-fit">Free first 30 days</span>
+                  )}
+
+                  {/* Icon */}
+                  <div className={`size-12 rounded-xl flex items-center justify-center mb-4 border ${plan.iconBg}`}>
+                    <PlanIcon className={`size-6 ${plan.iconColor}`} />
+                  </div>
+
+                  <div className="font-bold text-lg text-[#1A2332] mb-1">{plan.name}</div>
+                  <div className="mb-1">
+                    <span className="text-3xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                      {plan.price}
+                    </span>
+                    <span className="text-xs text-[#8A95A3] ml-1">{plan.period}</span>
+                  </div>
                   <div className="text-xs font-medium text-[#81A6C6] mb-1">{plan.credits}</div>
-                )}
-                {plan.autoPayNote && (
-                  <div className="text-[10px] text-[#8A95A3] mb-3">{plan.autoPayNote}</div>
-                )}
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-[#4A5668] bg-[#F3E3D0] border border-[#D2C4B4] rounded-lg px-2 py-1 mb-4 w-fit">
-                  {plan.experienceRange}
+
+                  {/* Experience range badge */}
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[#4A5668] bg-[#F3E3D0] border border-[#D2C4B4] rounded-lg px-2 py-1 mb-5 w-fit">
+                    {plan.experienceRange}
+                  </div>
+
+                  <ul className="space-y-2.5 flex-1 mb-6">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-xs text-[#4A5668]">
+                        <span className="size-1.5 rounded-full bg-[#81A6C6] shrink-0 mt-1" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href={plan.ctaHref}
+                    className={plan.highlight ? "btn-primary justify-center text-sm" : "btn-outline justify-center text-sm"}
+                  >
+                    {plan.cta}
+                  </Link>
                 </div>
-                <ul className="space-y-2 flex-1 mb-5">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-[#4A5668]">
-                      <span className="size-1.5 rounded-full bg-[#81A6C6] shrink-0" />{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/sign-up" className={plan.highlight ? "btn-primary justify-center text-sm" : "btn-outline justify-center text-sm"}>
-                  {plan.trialBadge ? 'Start free' : 'Choose plan'}
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          <p className="text-center text-xs text-[#8A95A3] mt-8">
+            All plans include auto-pay. Cancel anytime. No hidden fees.
+          </p>
         </section>
 
         {/* Expert teaser */}
@@ -224,7 +265,7 @@ export default function HomePage() {
               Not Talkers.
             </p>
             <p className="text-[#4A5668] mb-10">
-              30 days free. No credit card. Start building today.
+              Basic plan free for 30 days. No credit card. Start building today.
             </p>
             <Link href="/sign-up" className="btn-primary text-base px-10 py-4 mx-auto">
               Join GSF Free <ArrowRight className="size-5" />

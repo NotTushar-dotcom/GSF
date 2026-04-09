@@ -266,8 +266,8 @@ export default function ProgressTrackerPage() {
                       ))}
                     </div>
                     {stage.status === "locked" && (
-                      <p className="mt-3 text-xs text-center" style={{ color: "var(--text-muted)" }}>
-                        🔒 Complete all tasks in the previous stage to unlock this stage.
+                      <p className="mt-3 text-xs text-center flex items-center justify-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                        <Lock className="size-3.5" /> Complete all tasks in the previous stage to unlock this stage.
                       </p>
                     )}
                     {stage.status === "active" && (

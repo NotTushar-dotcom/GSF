@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Compass, Lightbulb, Rocket, Smile } from "lucide-react";
+import { ArrowRight, Compass, Lightbulb, Rocket, Smile, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -89,8 +89,8 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-semibold text-text-primary mb-2">
-            Welcome to GSF 👋
+          <h1 className="text-3xl font-semibold text-text-primary mb-2 flex items-center gap-2">
+            Welcome to GSF <Sparkles className="size-6 text-amber-400" />
           </h1>
           <p className="text-text-secondary">
             Tell us where you are today — we&apos;ll personalize your journey from here.

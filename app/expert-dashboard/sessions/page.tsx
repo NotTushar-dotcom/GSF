@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { Calendar, Clock, CheckCircle2, Video, Search, ChevronDown, Plus } from "lucide-react";
+import { Calendar, Clock, CheckCircle2, Video, Search, ChevronDown, Plus, Inbox } from "lucide-react";
 
 const ALL_SESSIONS = [
   { id: 1, founder: "Arjun Sharma",  venture: "EduLoop",      date: "Apr 8, 2026",  time: "3:00 PM", duration: 45, status: "completed", earned: 80,  avatar: "AS", topic: "ICP refinement & customer interview analysis" },
@@ -146,7 +146,7 @@ export default function ExpertSessionsPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-4xl mb-3">📭</p>
+            <Inbox className="size-10 text-[var(--text-muted)] mx-auto mb-3" />
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>No sessions match your filters</p>
           </div>
         )}

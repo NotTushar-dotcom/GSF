@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageSquare, Lightbulb, Users } from "lucide-react";
+import { MessageSquare, Lightbulb, Users, Eye, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Progress } from "@/components/ui/Progress";
 
@@ -83,7 +83,8 @@ export function CommunityPreviewSection() {
                   color: "bg-primary-100 text-primary-600",
                   name: "Arjun S.",
                   time: "2m ago",
-                  message: "Did anyone else struggle with identifying non-customers? My interview today was eye-opening 👀",
+                  message: "Did anyone else struggle with identifying non-customers? My interview today was eye-opening.",
+                  icon: Eye,
                 },
                 {
                   avatar: "P",
@@ -91,15 +92,17 @@ export function CommunityPreviewSection() {
                   name: "Priya M.",
                   time: "5m ago",
                   message: "Yes! I found that talking to people who rejected the idea gave me 10x better insights than buyers.",
+                  icon: null,
                 },
                 {
                   avatar: "R",
                   color: "bg-amber-100 text-amber-600",
                   name: "Rishi K.",
                   time: "8m ago",
-                  message: "Sharing my customer persona template — feel free to copy 🔗 Validation doc linked below.",
+                  message: "Sharing my customer persona template — feel free to copy. Validation doc linked below.",
+                  icon: Link2,
                 },
-              ].map(({ avatar, color, name, time, message }) => (
+              ].map(({ avatar, color, name, time, message, icon: MsgIcon }) => (
                 <div key={name} className="flex gap-2.5">
                   <div className={`size-7 rounded-full ${color} flex items-center justify-center text-xs font-semibold flex-shrink-0`}>
                     {avatar}
@@ -108,6 +111,7 @@ export function CommunityPreviewSection() {
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-semibold text-text-primary">{name}</span>
                       <span className="text-xs text-text-muted">{time}</span>
+                      {MsgIcon && <MsgIcon className="size-3 text-text-muted ml-auto" />}
                     </div>
                     <p className="text-xs text-text-secondary leading-relaxed mt-0.5">{message}</p>
                   </div>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Eye, EyeOff, CheckCircle2, Rocket } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, CheckCircle2, Rocket, Star, Zap } from "lucide-react";
 import { setSession } from "@/lib/auth";
 
 /* Google icon SVG component */
@@ -121,7 +121,10 @@ export default function LoginPage() {
                 style={tab === t
                   ? { backgroundColor: "var(--accent-indigo)", color: "white", boxShadow: "0 2px 8px rgba(91,108,255,0.35)" }
                   : { color: "var(--text-muted)" }}>
-                {t === "founder" ? "🚀 Founder" : "⭐ Expert"}
+                <span className="flex items-center justify-center gap-1.5">
+                  {t === "founder" ? <Rocket className="size-3.5" /> : <Star className="size-3.5" />}
+                  {t === "founder" ? "Founder" : "Expert"}
+                </span>
               </button>
             ))}
           </div>
@@ -247,9 +250,9 @@ export default function LoginPage() {
           </form>
 
           {/* Autofill helper */}
-          <button onClick={autofill} className="w-full mt-3 py-2 text-xs rounded-xl border transition-all"
+          <button onClick={autofill} className="w-full mt-3 py-2 text-xs rounded-xl border transition-all flex items-center justify-center gap-1.5"
             style={{ borderColor: "var(--border-soft)", color: "var(--text-muted)", backgroundColor: "var(--bg-surface-2)" }}>
-            ⚡ Auto-fill demo {tab} credentials
+            <Zap className="size-3" /> Auto-fill demo {tab} credentials
           </button>
 
           <p className="text-center text-xs mt-5" style={{ color: "var(--text-muted)" }}>
@@ -263,7 +266,7 @@ export default function LoginPage() {
         {/* Trial banner */}
         <div className="mt-4 flex items-center gap-2 justify-center text-xs" style={{ color: "var(--text-muted)" }}>
           <Rocket className="size-3" />
-          <span>30-day free trial · No credit card required · Cancel anytime</span>
+          <span>Basic plan free for 30 days · No credit card required · Cancel anytime</span>
         </div>
       </div>
 

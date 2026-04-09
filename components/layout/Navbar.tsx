@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Video, Lightbulb, Users, BookOpen, Info, Rocket, Zap, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, Video, Lightbulb, Users, BookOpen, Rocket, Zap, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getSession, logout } from "@/lib/auth";
 import type { AuthUser } from "@/lib/auth";
@@ -16,7 +16,6 @@ const NAV_LINKS = [
   { label: "Experts",   href: "/experts",   icon: Users },
   { label: "Community", href: "/community", icon: BookOpen },
   { label: "Insights",  href: "/insights",  icon: Zap },
-  { label: "About",     href: "/about",     icon: Info },
 ];
 
 export function Navbar() {

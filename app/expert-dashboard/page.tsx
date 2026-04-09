@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Calendar, Coins, Users, TrendingUp, Star, ChevronRight,
   CheckCircle2, Clock, Zap, ArrowUpRight, Award, BarChart2,
-  MessageSquare, Briefcase,
+  MessageSquare, Briefcase, Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { getSession } from "@/lib/auth";
@@ -160,8 +160,9 @@ export default function ExpertDashboardPage() {
         {/* Welcome */}
         <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
-              Welcome back, {user?.name?.split(" ")[0] ?? "Expert"} 🌟
+            <h1 className="text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
+              Welcome back, {user?.name?.split(" ")[0] ?? "Expert"}
+              <Sparkles className="size-5 text-amber-400" />
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               You&apos;ve impacted <strong>3 ventures</strong> this month. Keep mentoring!

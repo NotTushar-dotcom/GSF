@@ -1,10 +1,11 @@
 "use client";
 
+import React from "react";
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { Lightbulb, TrendingUp, MessageSquare, Shield, Percent, Eye, Heart, Search, ArrowRight, SlidersHorizontal } from "lucide-react";
+import { Lightbulb, TrendingUp, MessageSquare, Shield, Percent, Eye, Heart, Search, ArrowRight, SlidersHorizontal, BarChart2, Rocket, DollarSign, Building2, BookOpen } from "lucide-react";
 
 const AVATAR_COLORS = [
   { bg: "#DBEAFE", text: "#1E40AF" },
@@ -29,14 +30,14 @@ const IDEA_STAGES = [
   "Product-Market Fit",
 ];
 
-const STAGE_STYLES: Record<string, { bg: string; text: string; border: string; emoji: string }> = {
-  "Ideation":           { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D", emoji: "💡" },
-  "Idea Screening":     { bg: "#EDE9FE", text: "#5B21B6", border: "#C4B5FD", emoji: "🔍" },
-  "Market Research":    { bg: "#DBEAFE", text: "#1E40AF", border: "#93C5FD", emoji: "📊" },
-  "MVP":                { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7", emoji: "🚀" },
-  "Investment & Funding":{ bg: "#FEF9C3", text: "#713F12", border: "#FDE68A", emoji: "💰" },
-  "Company Launch":     { bg: "#EEF4F9", text: "#1E3A5F", border: "#AACDDC", emoji: "🏢" },
-  "Product-Market Fit": { bg: "#F0FDF4", text: "#14532D", border: "#86EFAC", emoji: "📈" },
+const STAGE_STYLES: Record<string, { bg: string; text: string; border: string; icon: React.ElementType }> = {
+  "Ideation":           { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D", icon: Lightbulb },
+  "Idea Screening":     { bg: "#EDE9FE", text: "#5B21B6", border: "#C4B5FD", icon: Search },
+  "Market Research":    { bg: "#DBEAFE", text: "#1E40AF", border: "#93C5FD", icon: BarChart2 },
+  "MVP":                { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7", icon: Rocket },
+  "Investment & Funding":{ bg: "#FEF9C3", text: "#713F12", border: "#FDE68A", icon: DollarSign },
+  "Company Launch":     { bg: "#EEF4F9", text: "#1E3A5F", border: "#AACDDC", icon: Building2 },
+  "Product-Market Fit": { bg: "#F0FDF4", text: "#14532D", border: "#86EFAC", icon: TrendingUp },
 };
 
 const VENTURES = [
@@ -139,7 +140,7 @@ export default function VenturesPage() {
                       borderColor: s.border,
                     }}
                   >
-                    {s.emoji} {stage}
+                    <s.icon className="size-3" /> {stage}
                   </button>
                 );
               })}
@@ -182,7 +183,7 @@ export default function VenturesPage() {
 
             {filtered.length === 0 ? (
               <div className="text-center py-20">
-                <div className="text-4xl mb-4">🔍</div>
+                <Search className="size-10 text-[#8A95A3] mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-[#1A2332] mb-2">No ventures found</h3>
                 <p className="text-sm text-[#8A95A3]">Try adjusting your filters or search term.</p>
               </div>
@@ -220,7 +221,7 @@ export default function VenturesPage() {
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
                           style={{ background: stageStyle.bg, color: stageStyle.text, borderColor: stageStyle.border }}
                         >
-                          {stageStyle.emoji} {v.ideaStage}
+                          <stageStyle.icon className="size-3" /> {v.ideaStage}
                         </span>
                       </div>
 
