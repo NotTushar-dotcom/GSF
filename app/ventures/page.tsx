@@ -114,7 +114,7 @@ export default function VenturesPage() {
                     <div className="text-[#1A2332] font-semibold text-sm">Escrow on all trades</div>
                   </div>
                 </div>
-                <Link href="/sign-up" className="btn-primary">
+                <Link href="/ventures/list" className="btn-primary">
                   <Lightbulb className="size-4" /> List Your Venture
                 </Link>
               </div>
