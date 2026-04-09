@@ -2,7 +2,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { Video, Lightbulb, Users, ArrowRight, Percent, Shield, Zap } from "lucide-react";
+import { Video, Lightbulb, Users, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -20,7 +20,7 @@ export default function HomePage() {
                 Two platforms. One mission.
               </h2>
               <p className="text-[#4A5668] text-lg max-w-xl mx-auto">
-                Connect with mentors who've done it. Fund the ideas that will shape tomorrow.
+                Connect with experts who've done it. Fund the ideas that will shape tomorrow.
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -34,7 +34,7 @@ export default function HomePage() {
                   GSF Connect
                 </h3>
                 <p className="text-[#4A5668] leading-relaxed mb-6">
-                  Book 1-on-1 video calls with world-class startup mentors. Continue the conversation via direct chat. Like Zoom — built exclusively for ambitious student founders.
+                  Book 1-on-1 video calls with world-class startup experts. Continue the conversation via direct chat. Like Zoom — built exclusively for ambitious student founders.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-8">
                   {["Live Video Calls", "Expert Chat", "Calendar Booking", "Session Notes"].map((f) => (
@@ -80,41 +80,93 @@ export default function HomePage() {
             </span>
             <h2 className="text-4xl font-bold text-[#1A2332] mb-4"
               style={{ fontFamily: "'Playfair Display', serif" }}>
-              We only earn when you do
+              We only earn when you build
             </h2>
             <p className="text-[#4A5668] max-w-xl mx-auto">
               No hidden fees. No inflated subscriptions. A model that aligns our incentives with yours.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {/* Credit / subscription plans */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
-                icon: Zap, color: "#81A6C6", bg: "#EEF4F9", border: "#AACDDC",
-                title: "30 Days Free",
-                desc: "Every new student gets full platform access for 30 days. No credit card. Explore, connect, and build before you pay a single rupee.",
-                note: "₹0 — full access",
+                name: "Free Trial",
+                price: "₹0",
+                period: "30 days",
+                credits: null,
+                autoPayNote: null,
+                expertise: "All experts",
+                experienceRange: "0–5+ yrs",
+                features: ["Full platform access", "Connect + Ventures", "Expert video calls", "All community features"],
+                highlight: false,
+                trialBadge: true,
               },
               {
-                icon: Video, color: "#5B8FB8", bg: "#EEF4F9", border: "#81A6C6",
-                title: "Expert Connect Plans",
-                desc: "After the free trial, subscribe to continue video calls and expert chat. Plans start at ₹999/month — less than one bad hire costs.",
-                note: "From ₹999 / month",
+                name: "Basic",
+                price: "₹499",
+                period: "/month",
+                credits: "600 credits",
+                autoPayNote: "Auto-pay enabled",
+                expertise: "Early-stage experts",
+                experienceRange: "0–2 yrs experience",
+                features: ["600 credits / month", "0–2 yr experience experts", "Venture marketplace", "Community access"],
+                highlight: false,
+                trialBadge: false,
               },
               {
-                icon: Percent, color: "#5B4A3A", bg: "#F3E3D0", border: "#D2C4B4",
-                title: "1–2% on Deals",
-                desc: "When a student's venture gets funded, GSF takes a 1–2% platform commission on the deal value. That's it. The rest goes to the founder.",
-                note: "1–2% platform fee only",
+                name: "Standard",
+                price: "₹999",
+                period: "/month",
+                credits: "1,500 credits",
+                autoPayNote: "Auto-pay enabled",
+                expertise: "Mid-level experts",
+                experienceRange: "2–5 yrs experience",
+                features: ["1,500 credits / month", "2–5 yr experience experts", "Priority booking", "All Basic features"],
+                highlight: true,
+                trialBadge: false,
               },
-            ].map(({ icon: Icon, color, bg, border, title, desc, note }) => (
-              <div key={title} className="card p-7 card-hover">
-                <div className="size-12 rounded-xl flex items-center justify-center mb-5"
-                  style={{ background: bg, border: `1px solid ${border}` }}>
-                  <Icon className="size-6" style={{ color }} />
+              {
+                name: "Premium",
+                price: "₹1,499",
+                period: "/month",
+                credits: "2,000 credits",
+                autoPayNote: "Auto-pay enabled",
+                expertise: "Senior experts",
+                experienceRange: "5+ yrs experience",
+                features: ["2,000 credits / month", "5+ yr experience experts", "Investor intros", "All Standard features"],
+                highlight: false,
+                trialBadge: false,
+              },
+            ].map((plan) => (
+              <div key={plan.name} className={`card p-6 flex flex-col card-hover ${
+                plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]' : ''
+              }`}>
+                {plan.trialBadge && <span className="badge badge-warm text-xs mb-3 w-fit">Start here</span>}
+                {plan.highlight && <span className="badge badge-blue text-xs mb-3 w-fit">Popular</span>}
+                <div className="font-semibold text-[#1A2332] mb-1">{plan.name}</div>
+                <div className="mb-1">
+                  <span className="text-2xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.price}</span>
+                  <span className="text-xs text-[#8A95A3] ml-1">{plan.period}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-[#1A2332] mb-3">{title}</h3>
-                <p className="text-sm text-[#4A5668] leading-relaxed mb-4">{desc}</p>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#81A6C6]">{note}</span>
+                {plan.credits && (
+                  <div className="text-xs font-medium text-[#81A6C6] mb-1">{plan.credits}</div>
+                )}
+                {plan.autoPayNote && (
+                  <div className="text-[10px] text-[#8A95A3] mb-3">{plan.autoPayNote}</div>
+                )}
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-[#4A5668] bg-[#F3E3D0] border border-[#D2C4B4] rounded-lg px-2 py-1 mb-4 w-fit">
+                  {plan.experienceRange}
+                </div>
+                <ul className="space-y-2 flex-1 mb-5">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-xs text-[#4A5668]">
+                      <span className="size-1.5 rounded-full bg-[#81A6C6] shrink-0" />{f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/sign-up" className={plan.highlight ? "btn-primary justify-center text-sm" : "btn-outline justify-center text-sm"}>
+                  {plan.trialBadge ? 'Start free' : 'Choose plan'}
+                </Link>
               </div>
             ))}
           </div>

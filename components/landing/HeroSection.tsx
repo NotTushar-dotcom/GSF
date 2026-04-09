@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Video, Lightbulb, Users, Shield } from "lucide-react";
+import { ArrowRight, Lightbulb } from "lucide-react";
 
 const container = {
   hidden: {},
@@ -13,11 +13,12 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
 
-const PILLARS = [
-  { icon: Video, label: "1-on-1 Video Calls", desc: "Book live sessions with expert mentors" },
-  { icon: Lightbulb, label: "Venture Marketplace", desc: "List ideas and attract equity investors" },
-  { icon: Users, label: "Expert Network", desc: "40+ domain-expert mentors, zero gatekeeping" },
-  { icon: Shield, label: "Free 30 Days", desc: "Full platform access, no credit card" },
+const JOURNEY_STAGES = [
+  { emoji: "💡", label: "Idea", desc: "I have a concept to explore" },
+  { emoji: "🔧", label: "Prototype", desc: "Building my first version" },
+  { emoji: "🚀", label: "MVP", desc: "Testing with real users" },
+  { emoji: "📈", label: "Traction", desc: "Growing and validating" },
+  { emoji: "💼", label: "Business Model", desc: "Ready to scale & raise" },
 ];
 
 export function HeroSection() {
@@ -27,7 +28,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-dot-grid opacity-30" />
 
       {/* Warm glow blobs */}
-      <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-[#AACDDC]/15 blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] rounded-full bg-[#AACDDC]/15 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-[#F3E3D0]/60 blur-[80px] pointer-events-none" />
 
       <div className="section-container relative z-10 pt-28 pb-16">
@@ -35,7 +36,7 @@ export function HeroSection() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="max-w-3xl"
+          className="max-w-2xl"
         >
           {/* Badge */}
           <motion.div variants={item} className="mb-8">
@@ -65,7 +66,7 @@ export function HeroSection() {
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={item} className="flex flex-wrap items-center gap-3 mb-16">
+          <motion.div variants={item} className="flex flex-wrap items-center gap-3 mb-14">
             <Link href="/sign-up" className="btn-primary text-base px-7 py-3.5">
               Get Started Free
               <ArrowRight className="size-4" />
@@ -76,15 +77,39 @@ export function HeroSection() {
             </Link>
           </motion.div>
 
+          {/* Journey stage selector */}
+          <motion.div variants={item}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#8A95A3] mb-4">
+              Where are you in your founder journey?
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              {JOURNEY_STAGES.map((stage) => (
+                <button
+                  key={stage.label}
+                  className="group flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#D2C4B4] bg-white hover:border-[#81A6C6] hover:bg-[#EEF4F9] transition-all duration-150 cursor-pointer shadow-soft-sm"
+                >
+                  <span className="text-base">{stage.emoji}</span>
+                  <div className="text-left">
+                    <div className="text-xs font-semibold text-[#1A2332] group-hover:text-[#3D74A0]">
+                      {stage.label}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-[#8A95A3] mt-3">
+              Select your stage and we'll personalise your GSF experience.
+            </p>
+          </motion.div>
+
           {/* Stats */}
           <motion.div
             variants={item}
-            className="flex items-center gap-8 pt-8 border-t border-[#D2C4B4] flex-wrap"
+            className="flex items-center gap-8 pt-10 border-t border-[#D2C4B4] mt-12 flex-wrap"
           >
             {[
               { value: "500+", label: "Student founders" },
-              { value: "40+", label: "Expert mentors" },
-              { value: "1–2%", label: "Platform fee on deals" },
+              { value: "40+", label: "Expert advisors" },
               { value: "₹0", label: "For first 30 days" },
             ].map(({ value, label }) => (
               <div key={label}>
@@ -100,24 +125,6 @@ export function HeroSection() {
               </div>
             ))}
           </motion.div>
-        </motion.div>
-
-        {/* Feature cards — floated right on large screens */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="hidden lg:grid grid-cols-2 gap-4 absolute right-8 top-1/2 -translate-y-1/2 w-80"
-        >
-          {PILLARS.map(({ icon: Icon, label, desc }) => (
-            <div key={label} className="card p-5 card-hover">
-              <div className="size-9 rounded-lg bg-[#EEF4F9] flex items-center justify-center mb-3">
-                <Icon className="size-4 text-[#81A6C6]" />
-              </div>
-              <div className="text-sm font-semibold text-[#1A2332] mb-1">{label}</div>
-              <div className="text-xs text-[#8A95A3] leading-relaxed">{desc}</div>
-            </div>
-          ))}
         </motion.div>
       </div>
     </section>

@@ -40,7 +40,7 @@ export default function CommunityPage() {
               <em className="not-italic text-gradient-primary">people who get it</em>
             </h1>
             <p className="text-xl text-[#4A5668] max-w-2xl mx-auto mb-10">
-              The GSF community is where ideas meet execution. Connect with driven student founders, experienced mentors, and a support system that actually pushes you forward.
+              The GSF community is where ideas meet execution. Connect with driven student founders, experienced experts, and a support system that actually pushes you forward.
             </p>
             <Link href="/sign-up" className="btn-primary text-base px-7 py-3.5">
               Join the community <ArrowRight className="size-4" />

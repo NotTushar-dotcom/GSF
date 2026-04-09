@@ -5,7 +5,7 @@ import { Video, MessageSquare, Calendar, Search, Star, Clock, ArrowRight, Shield
 
 export const metadata = {
   title: "Connect — GSF | Video Calls & Chat with Experts",
-  description: "Book 1-on-1 video calls and chat directly with top startup mentors on GSF.",
+  description: "Book 1-on-1 video calls and chat directly with top startup experts on GSF.",
 };
 
 const EXPERTS = [
@@ -45,7 +45,7 @@ export default function ConnectPage() {
               <em className="not-italic text-gradient-primary">actually built it</em>
             </h1>
             <p className="text-xl text-[#4A5668] max-w-2xl mx-auto mb-8">
-              Book 1-on-1 video calls with domain-expert mentors. Continue via direct chat. No middlemen, no gatekeeping.
+              Book 1-on-1 video calls with domain-expert advisors. Continue via direct chat. No middlemen, no gatekeeping.
             </p>
             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white border border-[#D2C4B4] shadow-soft-sm mb-12">
               <Shield className="size-5 text-[#81A6C6]" />
@@ -143,32 +143,80 @@ export default function ConnectPage() {
           <p className="text-[#4A5668] mb-12 max-w-lg mx-auto">
             Start free. Scale when you're ready.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {[
-              { name: "Explorer", price: "Free", period: "30 days", features: ["5 video calls/month", "Expert chat", "Venture browsing", "Community access"], highlight: false },
-              { name: "Builder", price: "₹999", period: "/month", features: ["Unlimited video calls", "Priority booking", "List 3 ventures", "Direct expert chat"], highlight: true },
-              { name: "Founder", price: "₹2,499", period: "/month", features: ["Everything in Builder", "Unlimited ventures", "Investor intros", "Dedicated advisor"], highlight: false },
+              {
+                name: "Free Trial",
+                price: "₹0",
+                period: "30 days",
+                credits: null,
+                autoPayNote: null,
+                experienceRange: "Access all experts",
+                features: ["All platform features", "Unlimited expert calls", "Connect + Ventures", "Community access"],
+                highlight: false, trialBadge: true,
+              },
+              {
+                name: "Basic",
+                price: "₹499",
+                period: "/month",
+                credits: "600 credits / month",
+                autoPayNote: "⚡ Auto-pay enabled",
+                experienceRange: "0–2 yr experts only",
+                features: ["600 credits", "0–2 yr experience experts", "Venture marketplace", "Community access"],
+                highlight: false, trialBadge: false,
+              },
+              {
+                name: "Standard",
+                price: "₹999",
+                period: "/month",
+                credits: "1,500 credits / month",
+                autoPayNote: "⚡ Auto-pay enabled",
+                experienceRange: "2–5 yr experts",
+                features: ["1,500 credits", "2–5 yr experience experts", "Priority booking", "All Basic features"],
+                highlight: true, trialBadge: false,
+              },
+              {
+                name: "Premium",
+                price: "₹1,499",
+                period: "/month",
+                credits: "2,000 credits / month",
+                autoPayNote: "⚡ Auto-pay enabled",
+                experienceRange: "5+ yr senior experts",
+                features: ["2,000 credits", "5+ yr senior experts", "Investor intros", "All Standard features"],
+                highlight: false, trialBadge: false,
+              },
             ].map((plan) => (
-              <div key={plan.name} className={`card p-6 flex flex-col ${plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.2)]' : ''}`}>
+              <div key={plan.name} className={`card p-6 flex flex-col ${
+                plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]' : ''
+              }`}>
+                {plan.trialBadge && <span className="badge badge-warm text-xs mb-3 w-fit">Start here</span>}
                 {plan.highlight && <span className="badge badge-blue text-xs mb-3 w-fit">Most Popular</span>}
                 <div className="font-semibold text-[#1A2332] mb-1">{plan.name}</div>
-                <div className="mb-5">
-                  <span className="text-3xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.price}</span>
-                  <span className="text-sm text-[#8A95A3]">{plan.period}</span>
+                <div className="mb-1">
+                  <span className="text-2xl font-bold text-[#1A2332]" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.price}</span>
+                  <span className="text-xs text-[#8A95A3] ml-1">{plan.period}</span>
                 </div>
-                <ul className="space-y-2.5 flex-1 mb-6 text-left">
+                {plan.credits && <div className="text-xs font-medium text-[#81A6C6] mb-1">{plan.credits}</div>}
+                {plan.autoPayNote && <div className="text-[10px] text-[#8A95A3] mb-3">{plan.autoPayNote}</div>}
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-[#4A5668] bg-[#F3E3D0] border border-[#D2C4B4] rounded-lg px-2 py-1 mb-4 w-fit">
+                  {plan.experienceRange}
+                </div>
+                <ul className="space-y-2 flex-1 mb-6 text-left">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-[#4A5668]">
+                    <li key={f} className="flex items-center gap-2 text-xs text-[#4A5668]">
                       <span className="size-1.5 rounded-full bg-[#81A6C6] shrink-0" />{f}
                     </li>
                   ))}
                 </ul>
-                <Link href="/sign-up" className={plan.highlight ? "btn-primary justify-center" : "btn-outline justify-center"}>
-                  Get started
+                <Link href="/sign-up" className={plan.highlight ? "btn-primary justify-center text-sm" : "btn-outline justify-center text-sm"}>
+                  {plan.trialBadge ? 'Get started free' : 'Choose plan'}
                 </Link>
               </div>
             ))}
           </div>
+          <p className="text-center text-xs text-[#8A95A3] mt-6">
+            Expert experience filters are applied automatically based on your plan. Upgrade anytime to unlock senior experts.
+          </p>
         </section>
       </main>
       <Footer />

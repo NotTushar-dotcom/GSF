@@ -51,7 +51,7 @@ export default function SignUpPage() {
                   <option>Student / Aspiring founder</option>
                   <option>Graduate student</option>
                   <option>Recent graduate</option>
-                  <option>Mentor / Expert</option>
+                  <option>Expert / Advisor</option>
                   <option>Investor / Venture creator</option>
                 </select>
               </div>

@@ -27,7 +27,7 @@ export default function ProgramsPage() {
               {[
                 { icon: Video, href: "/connect", label: "Connect", tagline: "1-on-1 video calls with experts", desc: "Book live sessions with mentors, VCs, and founders. Continue via built-in chat.", color: "bg-[#EEF4F9] border-[#AACDDC]", iconColor: "text-[#81A6C6]", badgeClass: "badge-blue" },
                 { icon: Lightbulb, href: "/ventures", label: "Ventures", tagline: "Startup idea marketplace", desc: "List your idea with equity terms and attract investors. GSF takes 1–2% on deals.", color: "bg-[#F3E3D0] border-[#D2C4B4]", iconColor: "text-[#5B4A3A]", badgeClass: "badge-warm" },
-                { icon: Users, href: "/experts", label: "Experts", tagline: "40+ world-class mentors", desc: "Domain experts across fundraising, product, growth, legal, and impact — ready for your call.", color: "bg-[#EEF4F9] border-[#AACDDC]", iconColor: "text-[#81A6C6]", badgeClass: "badge-blue" },
+                { icon: Users, href: "/experts", label: "Experts", tagline: "40+ world-class experts", desc: "Domain experts across fundraising, product, growth, legal, and impact — ready for your call.", color: "bg-[#EEF4F9] border-[#AACDDC]", iconColor: "text-[#81A6C6]", badgeClass: "badge-blue" },
               ].map(({ icon: Icon, href, label, tagline, desc, color, iconColor, badgeClass }) => (
                 <div key={label} className="card p-6 card-hover flex flex-col">
                   <div className={`size-12 rounded-2xl flex items-center justify-center mb-5 border ${color}`}>

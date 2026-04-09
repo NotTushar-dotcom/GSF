@@ -10,7 +10,7 @@ export const metadata = {
 
 const PERKS = [
   { icon: CheckCircle, text: "Full platform access — Connect + Ventures" },
-  { icon: Users, text: "Access to 40+ expert mentors" },
+  { icon: Users, text: "Access to 40+ expert advisors" },
   { icon: Lightbulb, text: "List your startup idea on the Venture marketplace" },
   { icon: Clock, text: "Free for 30 days, no credit card required" },
 ];
@@ -49,7 +49,7 @@ export default function ApplyPage() {
                 </div>
                 <div className="card card-warm p-5">
                   <p className="text-sm text-[#4A5668] italic" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    "I applied on a Tuesday and had my first mentor call by Thursday. GSF moved faster than I expected."
+                    "I applied on a Tuesday and had my first expert call by Thursday. GSF moved faster than I expected."
                   </p>
                   <div className="flex items-center gap-2 mt-3">
                     <div className="size-8 rounded-full bg-[#EEF4F9] border border-[#AACDDC] flex items-center justify-center text-xs font-bold text-[#3D74A0]">PS</div>

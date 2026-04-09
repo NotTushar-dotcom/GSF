@@ -4,8 +4,8 @@ import Link from "next/link";
 import { Star, MessageSquare, Video, Search, Briefcase } from "lucide-react";
 
 export const metadata = {
-  title: "Experts — GSF | World-Class Startup Mentors",
-  description: "Connect via video call or chat with top startup mentors, VCs, and domain experts on GSF.",
+  title: "Experts — GSF | World-Class Startup Experts",
+  description: "Connect via video call or chat with top startup experts, VCs, and domain advisors on GSF.",
 };
 
 const EXPERTS = [
@@ -26,7 +26,7 @@ export default function ExpertsPage() {
         <section className="relative section-padding bg-soft-pattern overflow-hidden">
           <div className="absolute inset-0 bg-dot-grid opacity-25" />
           <div className="section-container relative z-10 text-center">
-            <span className="badge badge-blue mb-6"><Star className="size-3.5" /> 40+ world-class mentors</span>
+            <span className="badge badge-blue mb-6"><Star className="size-3.5" /> 40+ world-class experts</span>
             <h1 className="text-5xl sm:text-6xl text-[#1A2332] tracking-tight mb-6"
               style={{ fontFamily: "'Playfair Display', serif" }}>
               Learn from founders{" "}
