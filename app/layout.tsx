@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | GSF",
   },
   description:
-    "GSF helps students validate ideas, build execution confidence, and develop founder thinking through structured cohort journeys.",
+    "GSF is a global-first digital platform for student founders. Validate ideas, connect with world-class experts, and build with confidence.",
   keywords: [
     "startup",
     "founders",
@@ -22,6 +24,8 @@ export const metadata: Metadata = {
     "idea validation",
     "entrepreneurship",
     "student startups",
+    "expert mentorship",
+    "venture marketplace",
   ],
   metadataBase: new URL("https://gsf.community"),
   openGraph: {
@@ -31,13 +35,13 @@ export const metadata: Metadata = {
     siteName: "Global Society of Founders",
     title: "GSF — Global Society of Founders",
     description:
-      "From startup curiosity to founder clarity. Join the cohort-based founder development ecosystem.",
+      "A Society for Founders — Not Talkers. Join the global founder development ecosystem.",
   },
   twitter: {
     card: "summary_large_image",
     title: "GSF — Global Society of Founders",
     description:
-      "From startup curiosity to founder clarity. Join the cohort-based founder development ecosystem.",
+      "A Society for Founders — Not Talkers. Join the global founder development ecosystem.",
   },
   robots: {
     index: true,
@@ -51,9 +55,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full bg-background font-sans text-text-primary">
-        {children}
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full font-sans" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-primary)" }}>
+        <ThemeProvider>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </ThemeProvider>
       </body>
     </html>
   );

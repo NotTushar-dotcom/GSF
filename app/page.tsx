@@ -1,12 +1,13 @@
 import { HeroSection } from "@/components/landing/HeroSection";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { IntroAnimationWrapper } from "@/components/landing/IntroAnimation";
 import Link from "next/link";
 import { Video, Lightbulb, Users, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <>
+    <IntroAnimationWrapper>
       <Navbar />
       <main>
         <HeroSection />
@@ -232,6 +233,6 @@ export default function HomePage() {
         </section>
       </main>
       <Footer />
-    </>
+    </IntroAnimationWrapper>
   );
 }

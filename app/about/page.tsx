@@ -50,14 +50,14 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-3xl text-[#1A2332] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>Our mission</h2>
                 <p className="text-[#4A5668] leading-relaxed mb-6">
-                  The Global Society of Founders exists to democratise the founder journey. We believe the next great company could be built by a student in Lagos, Lahore, or Lima — and we're building the infrastructure to make that possible.
+                  The Global Society of Founders exists to democratise the founder journey. We are a global-first digital platform supporting student founders worldwide — regardless of geography, background, or access to networks.
                 </p>
                 <p className="text-[#4A5668] leading-relaxed">
-                  Through video-based expert connect, a venture marketplace, and a global community, GSF gives students the tools, connections, and confidence to go from curious to building — and from building to funded.
+                  Through video-based expert connect, a venture marketplace, and a global community, GSF gives students the tools, connections, and confidence to turn great ideas into funded, scalable ventures.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {[{ value: "2023", label: "Founded" }, { value: "500+", label: "Students served" }, { value: "40+", label: "Expert mentors" }, { value: "30+", label: "Countries" }].map(({ value, label }) => (
+                {[{ value: "2026", label: "Founded" }, { value: "500+", label: "Students served" }, { value: "40+", label: "Expert mentors" }, { value: "30+", label: "Countries" }].map(({ value, label }) => (
                   <div key={label} className="card p-6 text-center card-hover">
                     <div className="text-3xl font-bold text-[#81A6C6] mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>{value}</div>
                     <div className="text-xs text-[#8A95A3] uppercase tracking-wide">{label}</div>
