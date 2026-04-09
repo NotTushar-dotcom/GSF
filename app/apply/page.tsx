@@ -1,162 +1,108 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { ArrowRight, CheckCircle, Clock, Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle, Clock, Users, Lightbulb } from "lucide-react";
 
 export const metadata = {
   title: "Apply — GSF | Global Society of Founders",
-  description: "Apply to join the next GSF cohort and start your founder journey today.",
+  description: "Apply to join the GSF community. Free for your first 30 days.",
 };
 
-const STEPS = [
-  { step: "01", title: "Fill out the application", desc: "Tell us about yourself, your idea, and what you're hoping to get from GSF. Takes about 10 minutes." },
-  { step: "02", title: "Short video intro", desc: "Record a 60-second video sharing why you want to be a founder. No fancy production needed — authenticity wins." },
-  { step: "03", title: "Discovery call", desc: "A 15-minute chat with a GSF advisor to make sure it's the right fit, and to answer any questions you have." },
-  { step: "04", title: "Cohort kick-off", desc: "You're in! Join your cohort, meet your team, and start your founder journey." },
+const PERKS = [
+  { icon: CheckCircle, text: "Full platform access — Connect + Ventures" },
+  { icon: Users, text: "Access to 40+ expert advisors" },
+  { icon: Lightbulb, text: "List your startup idea on the Venture marketplace" },
+  { icon: Clock, text: "Free for 30 days, no credit card required" },
 ];
 
 export default function ApplyPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-24 min-h-screen bg-background">
-        {/* Hero */}
-        <section className="relative section-padding overflow-hidden">
-          <div className="absolute inset-0 bg-dot-grid opacity-50" />
-          <div className="section-container relative z-10 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-100 text-green-700 text-sm font-medium mb-6">
-              <span className="size-1.5 rounded-full bg-green-500 animate-pulse" />
-              Applications open — Cohort 3
-            </div>
-            <h1 className="text-5xl sm:text-6xl font-semibold text-text-primary tracking-tight text-balance mb-6">
-              Take the first step toward{" "}
-              <span className="text-gradient-primary">founder clarity</span>
-            </h1>
-            <p className="text-xl text-text-secondary max-w-xl mx-auto mb-4">
-              Applications take 10 minutes. Decisions are rolling — the sooner you apply, the better your chances.
-            </p>
-            <div className="flex items-center justify-center gap-4 text-sm text-text-muted">
-              <span className="flex items-center gap-1.5"><Clock className="size-4" /> Deadline: May 15, 2026</span>
-              <span className="flex items-center gap-1.5"><Star className="size-4" /> 30 seats available</span>
-            </div>
-          </div>
-        </section>
+      <main className="pt-24 min-h-screen bg-[#FDFAF7]">
+        <section className="relative section-padding bg-soft-pattern overflow-hidden">
+          <div className="absolute inset-0 bg-dot-grid opacity-25" />
+          <div className="section-container relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
 
-        {/* Application form + info */}
-        <section className="section-container pb-24">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-
-            {/* Info sidebar */}
-            <div className="space-y-6">
-              <div className="card p-6">
-                <h3 className="font-semibold text-text-primary mb-4">What you get</h3>
-                <ul className="space-y-3">
-                  {[
-                    "8 weeks of structured cohort journey",
-                    "1-on-1 sessions with expert mentors",
-                    "Full community access",
-                    "Accountability pod",
-                    "Demo day with investors",
-                    "Alumni network for life",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm text-text-secondary">
-                      <CheckCircle className="size-4 text-secondary-500 mt-0.5 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="card p-6">
-                <h3 className="font-semibold text-text-primary mb-4">Process</h3>
-                <div className="space-y-4">
-                  {STEPS.map(({ step, title, desc }) => (
-                    <div key={step} className="flex gap-3">
-                      <div className="size-7 rounded-full bg-primary-50 text-primary-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-                        {step}
+              {/* Left info */}
+              <div className="lg:col-span-2 space-y-8">
+                <div>
+                  <span className="badge badge-blue mb-4"><span className="size-1.5 rounded-full bg-[#81A6C6]" /> Applications open</span>
+                  <h1 className="text-4xl sm:text-5xl text-[#1A2332] leading-tight"
+                    style={{ fontFamily: "'Playfair Display', serif" }}>
+                    Start your founder journey.
+                  </h1>
+                </div>
+                <p className="text-[#4A5668] leading-relaxed">
+                  Your first 30 days on GSF are completely free. Get full access to expert video calls, the venture marketplace, and our global community — no credit card needed.
+                </p>
+                <div className="space-y-3">
+                  {PERKS.map(({ icon: Icon, text }) => (
+                    <div key={text} className="flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-[#EEF4F9] border border-[#AACDDC] flex items-center justify-center shrink-0">
+                        <Icon className="size-4 text-[#81A6C6]" />
                       </div>
-                      <div>
-                        <div className="text-sm font-medium text-text-primary">{title}</div>
-                        <div className="text-xs text-text-muted mt-0.5 leading-relaxed">{desc}</div>
-                      </div>
+                      <span className="text-sm text-[#4A5668]">{text}</span>
                     </div>
                   ))}
                 </div>
+                <div className="card card-warm p-5">
+                  <p className="text-sm text-[#4A5668] italic" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    "I applied on a Tuesday and had my first expert call by Thursday. GSF moved faster than I expected."
+                  </p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="size-8 rounded-full bg-[#EEF4F9] border border-[#AACDDC] flex items-center justify-center text-xs font-bold text-[#3D74A0]">PS</div>
+                    <div>
+                      <div className="text-xs font-semibold text-[#1A2332]">Priya Sharma</div>
+                      <div className="text-[10px] text-[#8A95A3]">Founder, EduLoop</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Form */}
-            <div className="lg:col-span-2">
-              <div className="card p-8">
-                <h2 className="text-xl font-semibold text-text-primary mb-6">Your application</h2>
+              {/* Right form */}
+              <div className="lg:col-span-3 card p-8 bg-white">
+                <h2 className="text-lg font-semibold text-[#1A2332] mb-6">Create your account</h2>
                 <form className="space-y-5" id="apply-form">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="first-name">First name</label>
-                      <input id="first-name" type="text" className="input" placeholder="Aryan" />
+                      <label className="block text-sm font-medium text-[#1A2332] mb-1.5" htmlFor="apply-firstname">First name</label>
+                      <input id="apply-firstname" type="text" className="input" placeholder="Aryan" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="last-name">Last name</label>
-                      <input id="last-name" type="text" className="input" placeholder="Kapoor" />
+                      <label className="block text-sm font-medium text-[#1A2332] mb-1.5" htmlFor="apply-lastname">Last name</label>
+                      <input id="apply-lastname" type="text" className="input" placeholder="Kapoor" />
                     </div>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="apply-email">University email</label>
+                    <label className="block text-sm font-medium text-[#1A2332] mb-1.5" htmlFor="apply-email">University email</label>
                     <input id="apply-email" type="email" className="input" placeholder="you@university.edu" />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="university">University & Year</label>
-                    <input id="university" type="text" className="input" placeholder="e.g. IIT Delhi, 3rd Year" />
+                    <label className="block text-sm font-medium text-[#1A2332] mb-1.5" htmlFor="apply-university">University / College</label>
+                    <input id="apply-university" type="text" className="input" placeholder="IIT Delhi, BITS Pilani..." />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="program-select">Program of interest</label>
-                    <select id="program-select" className="input">
-                      <option value="">Select a program...</option>
-                      <option>Founder Foundation (8 weeks)</option>
-                      <option>Growth Accelerator (12 weeks)</option>
-                      <option>Deep Tech Track (10 weeks)</option>
+                    <label className="block text-sm font-medium text-[#1A2332] mb-1.5" htmlFor="apply-role">I am a...</label>
+                    <select id="apply-role" className="input">
+                      <option value="">Select your current role</option>
+                      <option>Undergraduate student</option>
+                      <option>Postgraduate student</option>
+                      <option>Recent graduate (within 2 years)</option>
+                      <option>First-time founder</option>
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="idea">What's your startup idea? (or area of interest)</label>
-                    <textarea
-                      id="idea"
-                      className="input textarea"
-                      placeholder="Tell us about the problem you want to solve and why you care about it..."
-                    />
+                    <label className="block text-sm font-medium text-[#1A2332] mb-1.5" htmlFor="apply-idea">Do you have a startup idea? (optional)</label>
+                    <textarea id="apply-idea" className="input textarea" style={{ minHeight: '88px' }}
+                      placeholder="Briefly describe your idea or the problem you want to solve..." />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="why-gsf">Why GSF? What do you hope to get from this program?</label>
-                    <textarea
-                      id="why-gsf"
-                      className="input textarea"
-                      style={{ minHeight: "100px" }}
-                      placeholder="Be honest — we value self-awareness over polished answers..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1.5" htmlFor="linkedin-url">LinkedIn URL (optional)</label>
-                    <input id="linkedin-url" type="url" className="input" placeholder="https://linkedin.com/in/yourname" />
-                  </div>
-
-                  <button
-                    type="submit"
-                    id="apply-submit"
-                    className="w-full bg-primary-500 text-white font-medium h-12 rounded-xl hover:bg-primary-600 transition-colors flex items-center justify-center gap-2 shadow-soft-sm"
-                  >
-                    Submit application <ArrowRight className="size-4" />
+                  <button id="apply-submit" type="submit" className="btn-primary w-full justify-center py-3 text-sm">
+                    Join GSF Free — 30 Days Access <ArrowRight className="size-4" />
                   </button>
-
-                  <p className="text-xs text-text-muted text-center">
-                    By submitting, you agree to our{" "}
-                    <a href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</a>{" "}
-                    and{" "}
-                    <a href="/terms" className="text-primary-600 hover:underline">Terms</a>.
+                  <p className="text-xs text-[#8A95A3] text-center">
+                    No credit card required. Cancel anytime after trial.
                   </p>
                 </form>
               </div>
