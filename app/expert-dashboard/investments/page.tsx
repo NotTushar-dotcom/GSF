@@ -300,19 +300,20 @@ export default function ExpertContributionsPage() {
         <motion.div
           {...fadeUp(0.3)}
           className="p-6 rounded-3xl relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #0B0F19, #111827)", border: "1px solid rgba(79,209,197,0.3)" }}
+          style={{ backgroundColor: "var(--bg-surface)", border: "1px solid rgba(79,209,197,0.35)" }}
         >
-          <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style={{ background: "rgba(79,209,197,0.15)" }} />
+          <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-[70px] pointer-events-none" style={{ background: "rgba(79,209,197,0.08)" }} />
+          <div className="absolute bottom-0 left-0 w-36 h-36 rounded-full blur-[50px] pointer-events-none" style={{ background: "rgba(91,108,255,0.06)" }} />
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Total Equity Accumulated</p>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Total Equity Accumulated</p>
               <p className="text-4xl font-extrabold" style={{ color: "#4FD1C5", fontFamily: "'Playfair Display', serif" }}>
                 4.0%
               </p>
-              <p className="text-gray-400 text-xs mt-1">across {MY_CONTRIBUTIONS.length} ventures · {totalHours}h mentored</p>
+              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>across {MY_CONTRIBUTIONS.length} ventures · {totalHours}h mentored</p>
             </div>
-            <div className="sm:ml-auto flex items-center gap-2 text-gray-300 text-sm">
-              <Zap className="size-4 text-yellow-400" />
+            <div className="sm:ml-auto flex items-center gap-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+              <Zap className="size-4 text-yellow-500" />
               <span>GSF Verified Expert since 2026</span>
             </div>
           </div>

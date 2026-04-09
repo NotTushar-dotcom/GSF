@@ -50,29 +50,29 @@ export default function CreditsPage() {
         {/* Balance card */}
         <motion.div {...fadeUp(0.05)}
           className="p-8 rounded-3xl relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #0B0F19, #111827)", border: "1px solid rgba(91,108,255,0.3)" }}
+          style={{ backgroundColor: "var(--bg-surface)", border: "1px solid rgba(91,108,255,0.35)" }}
         >
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] pointer-events-none" style={{ background: "rgba(91,108,255,0.2)" }} />
-          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-[60px] pointer-events-none" style={{ background: "rgba(79,209,197,0.1)" }} />
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] pointer-events-none" style={{ background: "rgba(91,108,255,0.08)" }} />
+          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-[60px] pointer-events-none" style={{ background: "rgba(79,209,197,0.06)" }} />
 
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Current Balance</p>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Current Balance</p>
               <div className="flex items-end gap-2">
-                <span className="text-6xl font-extrabold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <span className="text-6xl font-extrabold" style={{ color: "var(--text-primary)", fontFamily: "'Playfair Display', serif" }}>
                   {credits}
                 </span>
-                <span className="text-gray-400 mb-2">credits</span>
+                <span className="mb-2" style={{ color: "var(--text-muted)" }}>credits</span>
               </div>
-              <p className="text-sm text-gray-400 mt-1">Basic Plan · Free trial · Resets in 22 days</p>
+              <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Basic Plan · Free trial · Resets in 22 days</p>
             </div>
 
             <div className="sm:ml-auto w-full sm:w-64">
-              <div className="flex justify-between text-xs text-gray-400 mb-2">
+              <div className="flex justify-between text-xs mb-2" style={{ color: "var(--text-muted)" }}>
                 <span>Used: {600 - credits}</span>
                 <span>Limit: 600</span>
               </div>
-              <div className="h-2 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
+              <div className="h-2 rounded-full" style={{ backgroundColor: "var(--bg-surface-2)" }}>
                 <motion.div
                   className="h-full rounded-full"
                   style={{ background: "linear-gradient(to right, #5B6CFF, #4FD1C5)" }}
@@ -81,12 +81,13 @@ export default function CreditsPage() {
                   transition={{ duration: 1, ease: "easeOut" }}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
                 100 credits = 1 expert session (Basic tier)
               </p>
             </div>
           </div>
         </motion.div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Transaction log */}

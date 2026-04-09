@@ -214,6 +214,49 @@ function CreditWallet({ credits }: { credits: number }) {
   );
 }
 
+function CommunityFeedWidget() {
+  const [posts, setPosts] = useState<{ id: string; title: string; author: string; upvotes: number; tag: string }[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("gsf_community_posts");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setPosts(parsed.slice(0, 3).map((p: { id: string; title: string; author: string; upvotes: number; tag: string }) => ({
+          id: p.id, title: p.title, author: p.author, upvotes: p.upvotes, tag: p.tag,
+        })));
+      } else {
+        // fallback seeds
+        setPosts([
+          { id: "p2", title: "What I look for in a GSF student pitch", author: "Dr. Anika Patel", upvotes: 412, tag: "Expert View" },
+          { id: "p8", title: "How we evaluate pre-seed rounds", author: "Fatima Ali", upvotes: 441, tag: "Investor Lens" },
+          { id: "p1", title: "From a WhatsApp group to ₹15L raise", author: "Priya Sharma", upvotes: 284, tag: "Founder Story" },
+        ]);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  if (posts.length === 0) return (
+    <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>No posts yet. Be the first!</p>
+  );
+
+  return (
+    <div className="space-y-2.5">
+      {posts.map(p => (
+        <Link key={p.id} href={`/community#${p.id}`}
+          className="block p-3 rounded-xl transition-all hover:scale-[1.01]"
+          style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-soft)" }}>
+          <p className="text-xs font-semibold line-clamp-2 mb-1.5" style={{ color: "var(--text-primary)" }}>{p.title}</p>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>{p.author}</span>
+            <span className="text-[10px] font-medium" style={{ color: "var(--accent-indigo)" }}>▲ {p.upvotes}</span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export default function FounderDashboardPage() {
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -456,7 +499,22 @@ export default function FounderDashboardPage() {
               </div>
             </motion.div>
 
+            {/* Community Feed */}
+            <motion.div {...fadeUp(0.23)} className="card p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Users className="size-4" style={{ color: "var(--accent-indigo)" }} />
+                  <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Community Feed</h3>
+                </div>
+                <Link href="/community" className="text-xs font-medium" style={{ color: "var(--accent-indigo)" }}>
+                  See all →
+                </Link>
+              </div>
+              <CommunityFeedWidget />
+            </motion.div>
+
             {/* Top expert recommendation */}
+
             <motion.div {...fadeUp(0.25)} className="card p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Star className="size-4 text-yellow-400 fill-yellow-400" />
