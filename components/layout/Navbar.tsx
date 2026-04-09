@@ -33,27 +33,31 @@ export function Navbar() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled
-            ? "bg-[#07071A]/95 backdrop-blur-md border-b border-[#1E1E45] shadow-[0_4px_20px_rgba(34,51,255,0.08)]"
+            ? "bg-white/95 backdrop-blur-md border-b border-[#D2C4B4] shadow-[0_2px_16px_rgba(26,35,50,0.07)]"
             : "bg-transparent"
         )}
       >
         <div className="section-container">
           <div className="flex items-center justify-between h-16">
+
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="size-9 rounded-xl overflow-hidden border border-[#2233FF40] shadow-[0_0_12px_rgba(34,51,255,0.3)] group-hover:shadow-[0_0_20px_rgba(34,51,255,0.5)] transition-shadow duration-200">
-                <Image src="/gsf-logo.png" alt="GSF" width={36} height={36} className="object-cover" />
+              <div className="logo-circle group-hover:shadow-[0_4px_16px_rgba(129,166,198,0.4)] transition-shadow duration-200">
+                <Image
+                  src="/gsf-logo.png"
+                  alt="GSF Logo"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full"
+                />
               </div>
               <div>
-                <span
-                  className="font-black text-lg tracking-wider text-white uppercase"
-                  style={{ fontFamily: "'Exo 2', sans-serif" }}
-                >
+                <span className="font-semibold text-[#1A2332] text-base tracking-tight leading-none block">
                   GSF
                 </span>
-                <div className="text-[9px] text-[#5B6080] tracking-widest uppercase -mt-0.5 hidden sm:block">
+                <span className="text-[10px] text-[#8A95A3] tracking-widest uppercase font-medium leading-none hidden sm:block">
                   Global Society of Founders
-                </div>
+                </span>
               </div>
             </Link>
 
@@ -64,12 +68,11 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2",
+                    "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150",
                     pathname === link.href
-                      ? "text-[#6677FF] bg-[#2233FF15] border border-[#2233FF20]"
-                      : "text-[#9BA3D4] hover:text-[#F0F0FF] hover:bg-[#1E1E45]"
+                      ? "text-[#3D74A0] bg-[#EEF4F9] border border-[#AACDDC]"
+                      : "text-[#4A5668] hover:text-[#1A2332] hover:bg-[#F3E3D0]/60"
                   )}
-                  style={{ fontFamily: "'Exo 2', sans-serif" }}
                 >
                   <link.icon className="size-3.5" />
                   {link.label}
@@ -79,17 +82,10 @@ export function Navbar() {
 
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-2">
-              <Link
-                href="/sign-in"
-                className="px-4 py-2 text-sm font-semibold text-[#9BA3D4] hover:text-white transition-colors"
-                style={{ fontFamily: "'Exo 2', sans-serif" }}
-              >
+              <Link href="/sign-in" className="btn-ghost text-sm py-2 px-4">
                 Log in
               </Link>
-              <Link
-                href="/sign-up"
-                className="btn-primary py-2 px-5 text-sm"
-              >
+              <Link href="/sign-up" className="btn-primary text-sm py-2 px-5">
                 <Rocket className="size-3.5" />
                 Get Started Free
               </Link>
@@ -97,7 +93,7 @@ export function Navbar() {
 
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden p-2 rounded-lg text-[#9BA3D4] hover:bg-[#1E1E45] transition-colors"
+              className="lg:hidden p-2 rounded-lg text-[#4A5668] hover:bg-[#F3E3D0] transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
             >
@@ -114,8 +110,8 @@ export function Navbar() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-16 z-40 bg-[#0D0D24]/98 border-b border-[#1E1E45] backdrop-blur-md lg:hidden"
+            transition={{ duration: 0.18 }}
+            className="fixed inset-x-0 top-16 z-40 bg-white/98 border-b border-[#D2C4B4] backdrop-blur-md shadow-soft-md lg:hidden"
           >
             <div className="section-container py-4 space-y-1">
               {NAV_LINKS.map((link) => (
@@ -124,30 +120,21 @@ export function Navbar() {
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
                     pathname === link.href
-                      ? "text-[#6677FF] bg-[#2233FF15]"
-                      : "text-[#9BA3D4] hover:text-[#F0F0FF] hover:bg-[#1E1E45]"
+                      ? "text-[#3D74A0] bg-[#EEF4F9]"
+                      : "text-[#4A5668] hover:text-[#1A2332] hover:bg-[#F3E3D0]/60"
                   )}
-                  style={{ fontFamily: "'Exo 2', sans-serif" }}
                 >
                   <link.icon className="size-4" />
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-4 border-t border-[#1E1E45] flex flex-col gap-2">
-                <Link
-                  href="/sign-in"
-                  onClick={() => setMobileOpen(false)}
-                  className="btn-outline w-full justify-center py-2.5"
-                >
+              <div className="pt-4 border-t border-[#D2C4B4] flex flex-col gap-2">
+                <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="btn-outline w-full justify-center">
                   Log in
                 </Link>
-                <Link
-                  href="/sign-up"
-                  onClick={() => setMobileOpen(false)}
-                  className="btn-primary w-full justify-center py-2.5"
-                >
+                <Link href="/sign-up" onClick={() => setMobileOpen(false)} className="btn-primary w-full justify-center">
                   <Rocket className="size-4" />
                   Get Started Free
                 </Link>
