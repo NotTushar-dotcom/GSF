@@ -9,8 +9,6 @@ GSF is a professional platform connecting student founders with world-class expe
 ## 🌐 Live Platform
 
 **URL:** [http://localhost:3000](http://localhost:3000) (development)  
-**Branch:** `Ayu`  
-**Repo:** [github.com/Ayushh-Sharmaa/GSF](https://github.com/Ayushh-Sharmaa/GSF)
 
 ---
 
