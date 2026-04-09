@@ -44,7 +44,7 @@ export function Navbar() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="logo-circle group-hover:shadow-[0_4px_16px_rgba(129,166,198,0.4)] transition-shadow duration-200">
                 <Image
-                  src="/gsf-logo.png"
+                  src="/gsf-logo.jpeg"
                   alt="GSF Logo"
                   width={40}
                   height={40}

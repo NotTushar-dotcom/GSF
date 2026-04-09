@@ -32,7 +32,7 @@ export function Footer() {
           <div className="md:col-span-2 space-y-5">
             <Link href="/" className="flex items-center gap-3 w-fit group">
               <div className="logo-circle group-hover:shadow-[0_4px_16px_rgba(129,166,198,0.35)] transition-shadow">
-                <Image src="/gsf-logo.png" alt="GSF" width={40} height={40} className="object-cover w-full h-full" />
+                <Image src="/gsf-logo.jpeg" alt="GSF" width={40} height={40} className="object-cover w-full h-full" />
               </div>
               <div>
                 <span className="font-semibold text-[#1A2332] text-base tracking-tight block">GSF</span>

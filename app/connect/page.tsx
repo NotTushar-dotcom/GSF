@@ -50,7 +50,7 @@ export default function ConnectPage() {
             <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white border border-[#D2C4B4] shadow-soft-sm mb-12">
               <Shield className="size-5 text-[#81A6C6]" />
               <span className="text-sm text-[#4A5668]">
-                <span className="text-[#1A2332] font-semibold">Free for 30 days</span> — full access. Then from ₹999/month.
+                <span className="text-[#1A2332] font-semibold">Free for 30 days</span> — full access. Then from ₹499/month.
               </span>
             </div>
           </div>
@@ -186,9 +186,8 @@ export default function ConnectPage() {
                 highlight: false, trialBadge: false,
               },
             ].map((plan) => (
-              <div key={plan.name} className={`card p-6 flex flex-col ${
-                plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]' : ''
-              }`}>
+              <div key={plan.name} className={`card p-6 flex flex-col ${plan.highlight ? 'border-[#81A6C6] shadow-[0_4px_24px_rgba(129,166,198,0.18)]' : ''
+                }`}>
                 {plan.trialBadge && <span className="badge badge-warm text-xs mb-3 w-fit">Start here</span>}
                 {plan.highlight && <span className="badge badge-blue text-xs mb-3 w-fit">Most Popular</span>}
                 <div className="font-semibold text-[#1A2332] mb-1">{plan.name}</div>
