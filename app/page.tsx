@@ -75,7 +75,6 @@ export default function HomePage() {
         <section className="section-container section-padding">
           <div className="text-center mb-14">
             <span className="badge badge-blue mb-4">
-              <Percent className="size-3.5" />
               Transparent pricing
             </span>
             <h2 className="text-4xl font-bold text-[#1A2332] mb-4"
