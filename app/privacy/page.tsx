@@ -1,56 +1,35 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
-export const metadata = {
-  title: "Privacy Policy — GSF | Global Society of Founders",
-  description: "GSF privacy policy and data handling practices.",
-};
+export const metadata = { title: "Privacy Policy — GSF", description: "How GSF collects and uses your data." };
+
+const sections = [
+  { heading: "Information We Collect", body: "We collect information you provide directly to us — such as your name, email address, university, and any content you submit (venture listings, messages). We also automatically collect usage data including browser type, pages visited, and device information to improve the platform." },
+  { heading: "How We Use Your Information", body: "We use your information to operate and improve the GSF platform, facilitate connections between members, process subscription payments, send product updates and community communications, and comply with legal obligations. We do not sell your personal data to third parties." },
+  { heading: "Data Sharing", body: "Your profile information is shared with other GSF members as part of the platform's core function (e.g., experts can see your name and question when you book a call). Venture listings are visible to all registered investors. We use trusted third-party services (e.g., Stripe for payments) who are contractually bound to protect your data." },
+  { heading: "Data Retention", body: "We retain your data for as long as your account is active or as needed to provide services. You may request deletion of your account and associated data at any time by contacting hello@gsf.community." },
+  { heading: "Cookies", body: "We use cookies to maintain session state, analyse usage patterns, and personalise your experience. See our Cookies Policy for full details. You may disable cookies in your browser settings, though some platform features may not function correctly." },
+  { heading: "Your Rights", body: "Depending on your jurisdiction, you may have rights to access, correct, or delete your personal data. Contact us at hello@gsf.community to exercise these rights." },
+  { heading: "Contact", body: "If you have questions about this policy, contact us at hello@gsf.community or write to Global Society of Founders, Bangalore, India." },
+];
 
 export default function PrivacyPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-24 min-h-screen bg-background">
-        <div className="section-container py-16 max-w-3xl">
-          <h1 className="text-4xl font-semibold text-text-primary mb-2">Privacy Policy</h1>
-          <p className="text-sm text-text-muted mb-12">Last updated: April 1, 2026</p>
-
-          {[
-            {
-              title: "1. Information we collect",
-              body: "We collect information you provide directly — name, email, university, and startup details when you apply or create an account. We also collect usage data such as pages visited, features used, and session duration to improve our platform.",
-            },
-            {
-              title: "2. How we use your information",
-              body: "We use your information to operate and improve GSF programs, communicate with you about your application and cohort, send educational content and insights (with your consent), and match you with relevant mentors and experts.",
-            },
-            {
-              title: "3. How we share your information",
-              body: "We do not sell your personal data. We may share limited information with GSF expert mentors (name, background) to facilitate sessions, and with third-party service providers who operate under strict data processing agreements.",
-            },
-            {
-              title: "4. Data retention",
-              body: "We retain your data for as long as your account is active, plus a reasonable period afterward in case you rejoin. You may request deletion of your data at any time by emailing hello@gsf.community.",
-            },
-            {
-              title: "5. Your rights",
-              body: "Depending on your location, you may have the right to access, update, or delete your personal data. You may also opt out of marketing communications at any time using the unsubscribe link in any email.",
-            },
-            {
-              title: "6. Cookies",
-              body: "We use essential cookies to keep you logged in and analyze usage. You can control cookie preferences in your browser settings. For more information, see our Cookie Policy.",
-            },
-            {
-              title: "7. Contact",
-              body: "For any privacy-related questions, please contact us at privacy@gsf.community.",
-            },
-          ].map(({ title, body }) => (
-            <section key={title} className="mb-10">
-              <h2 className="text-lg font-semibold text-text-primary mb-3">{title}</h2>
-              <p className="text-text-secondary leading-relaxed">{body}</p>
-            </section>
-          ))}
-        </div>
+      <main className="pt-24 min-h-screen bg-[#FDFAF7]">
+        <section className="section-container py-20 max-w-3xl mx-auto">
+          <h1 className="text-4xl text-[#1A2332] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>Privacy Policy</h1>
+          <p className="text-[#8A95A3] text-sm mb-10">Last updated: April 2026</p>
+          <div className="space-y-8">
+            {sections.map(({ heading, body }) => (
+              <div key={heading} className="border-t border-[#D2C4B4] pt-8">
+                <h2 className="text-lg font-semibold text-[#1A2332] mb-3">{heading}</h2>
+                <p className="text-[#4A5668] leading-relaxed text-sm">{body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
       <Footer />
     </>

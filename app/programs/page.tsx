@@ -1,173 +1,58 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { ArrowRight, Clock, Users, Star, CheckCircle } from "lucide-react";
+import { ArrowRight, Video, Lightbulb, Users } from "lucide-react";
 
 export const metadata = {
   title: "Programs — GSF | Global Society of Founders",
-  description: "Explore GSF's structured cohort programs designed to take you from startup curiosity to founder clarity.",
+  description: "Explore the GSF platform — Connect, Ventures, and Expert Network.",
 };
-
-const PROGRAMS = [
-  {
-    id: "founder-foundation",
-    badge: "Most Popular",
-    badgeColor: "bg-primary-500",
-    title: "Founder Foundation",
-    subtitle: "8-week cohort",
-    description:
-      "A structured 8-week journey that helps you validate your startup idea, understand your target market, and build your first MVP with expert guidance.",
-    duration: "8 weeks",
-    spots: "30 students",
-    level: "Beginner",
-    outcomes: [
-      "Validate your startup idea with real users",
-      "Build and ship your first MVP",
-      "Develop a founder mindset",
-      "Present to a panel of mentors",
-    ],
-    price: "Free",
-    ctaLabel: "Apply Now",
-    href: "/apply",
-  },
-  {
-    id: "growth-accelerator",
-    badge: "Advanced",
-    badgeColor: "bg-secondary-500",
-    title: "Growth Accelerator",
-    subtitle: "12-week cohort",
-    description:
-      "For founders with a validated idea ready to scale. Learn growth strategies, fundraising fundamentals, and build a strong team around your vision.",
-    duration: "12 weeks",
-    spots: "20 students",
-    level: "Intermediate",
-    outcomes: [
-      "Build a scalable growth engine",
-      "Learn fundraising fundamentals",
-      "Develop team-building skills",
-      "Connect with investors",
-    ],
-    price: "Free",
-    ctaLabel: "Apply Now",
-    href: "/apply",
-  },
-  {
-    id: "deep-tech-track",
-    badge: "Specialized",
-    badgeColor: "bg-amber-500",
-    title: "Deep Tech Track",
-    subtitle: "10-week cohort",
-    description:
-      "Purpose-built for tech founders working on AI, biotech, or hardware. Bridge the gap between research and commercial viability with domain experts.",
-    duration: "10 weeks",
-    spots: "15 students",
-    level: "Advanced",
-    outcomes: [
-      "Commercialize deep tech research",
-      "IP strategy and protection",
-      "Technical co-founder matching",
-      "Deep tech investor access",
-    ],
-    price: "Free",
-    ctaLabel: "Apply Now",
-    href: "/apply",
-  },
-];
 
 export default function ProgramsPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-24 min-h-screen bg-background">
-        {/* Hero */}
-        <section className="relative section-padding overflow-hidden">
-          <div className="absolute inset-0 bg-dot-grid opacity-50" />
-          <div className="absolute top-1/4 left-1/3 size-96 rounded-full bg-primary-500/5 blur-3xl pointer-events-none" />
-          <div className="section-container relative z-10 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-600 text-sm font-medium mb-6">
-              <span className="size-1.5 rounded-full bg-primary-500" />
-              Cohort 3 applications open
-            </div>
-            <h1 className="text-5xl sm:text-6xl font-semibold text-text-primary tracking-tight text-balance mb-6">
-              Programs built for{" "}
-              <span className="text-gradient-primary">real founders</span>
+      <main className="pt-24 min-h-screen bg-[#FDFAF7]">
+        <section className="relative section-padding bg-soft-pattern overflow-hidden">
+          <div className="absolute inset-0 bg-dot-grid opacity-25" />
+          <div className="section-container relative z-10 text-center max-w-3xl mx-auto">
+            <h1 className="text-5xl sm:text-6xl text-[#1A2332] tracking-tight mb-6"
+              style={{ fontFamily: "'Playfair Display', serif" }}>
+              The GSF <em className="not-italic text-gradient-primary">Platform</em>
             </h1>
-            <p className="text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-              Every GSF program is cohort-based, mentor-driven, and designed to get you from idea to execution with accountability and community support.
+            <p className="text-xl text-[#4A5668] mb-12">
+              GSF isn't a traditional program — it's a live platform connecting students, experts, and investors. Here's what you get access to on day one.
             </p>
-          </div>
-        </section>
-
-        {/* Programs Grid */}
-        <section className="section-container pb-24">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {PROGRAMS.map((program) => (
-              <div key={program.id} className="card card-hover p-8 flex flex-col">
-                <div className="flex items-start justify-between mb-6">
-                  <span className={`badge text-white text-xs ${program.badgeColor}`}>
-                    {program.badge}
-                  </span>
-                  <span className="text-xs text-text-muted font-medium bg-gray-100 px-2.5 py-1 rounded-full">
-                    {program.level}
-                  </span>
-                </div>
-
-                <h2 className="text-xl font-semibold text-text-primary mb-1">
-                  {program.title}
-                </h2>
-                <p className="text-sm text-primary-500 font-medium mb-4">{program.subtitle}</p>
-                <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                  {program.description}
-                </p>
-
-                <div className="flex items-center gap-4 mb-6 text-sm text-text-muted">
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="size-3.5" /> {program.duration}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Users className="size-3.5" /> {program.spots}
-                  </span>
-                </div>
-
-                <ul className="space-y-2.5 mb-8 flex-1">
-                  {program.outcomes.map((o) => (
-                    <li key={o} className="flex items-start gap-2.5 text-sm text-text-secondary">
-                      <CheckCircle className="size-4 text-secondary-500 mt-0.5 shrink-0" />
-                      {o}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex items-center justify-between pt-6 border-t border-border">
-                  <span className="text-lg font-semibold text-text-primary">{program.price}</span>
-                  <Link
-                    href={program.href}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                  >
-                    {program.ctaLabel} <ArrowRight className="size-3.5" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left">
+              {[
+                { icon: Video, href: "/connect", label: "Connect", tagline: "1-on-1 video calls with experts", desc: "Book live sessions with mentors, VCs, and founders. Continue via built-in chat.", color: "bg-[#EEF4F9] border-[#AACDDC]", iconColor: "text-[#81A6C6]", badgeClass: "badge-blue" },
+                { icon: Lightbulb, href: "/ventures", label: "Ventures", tagline: "Startup idea marketplace", desc: "List your idea with equity terms and attract investors. GSF takes 1–2% on deals.", color: "bg-[#F3E3D0] border-[#D2C4B4]", iconColor: "text-[#5B4A3A]", badgeClass: "badge-warm" },
+                { icon: Users, href: "/experts", label: "Experts", tagline: "40+ world-class experts", desc: "Domain experts across fundraising, product, growth, legal, and impact — ready for your call.", color: "bg-[#EEF4F9] border-[#AACDDC]", iconColor: "text-[#81A6C6]", badgeClass: "badge-blue" },
+              ].map(({ icon: Icon, href, label, tagline, desc, color, iconColor, badgeClass }) => (
+                <div key={label} className="card p-6 card-hover flex flex-col">
+                  <div className={`size-12 rounded-2xl flex items-center justify-center mb-5 border ${color}`}>
+                    <Icon className={`size-6 ${iconColor}`} />
+                  </div>
+                  <span className={`badge w-fit mb-3 ${badgeClass}`}>{label}</span>
+                  <h2 className="text-lg font-semibold text-[#1A2332] mb-2">{tagline}</h2>
+                  <p className="text-sm text-[#4A5668] leading-relaxed flex-1 mb-6">{desc}</p>
+                  <Link href={href} className="btn-outline text-sm py-2 justify-center">
+                    Explore <ArrowRight className="size-3.5" />
                   </Link>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* CTA strip */}
-        <section className="bg-primary-500 py-16">
-          <div className="section-container text-center">
-            <h2 className="text-3xl font-semibold text-white mb-4">
-              Not sure which program is right for you?
-            </h2>
-            <p className="text-primary-100 mb-8 max-w-xl mx-auto">
-              Book a 15-minute discovery call with a GSF advisor and we'll help you find the best fit.
-            </p>
-            <Link
-              href="/apply"
-              className="inline-flex items-center gap-2 bg-white text-primary-600 font-medium px-6 py-3 rounded-xl hover:bg-primary-50 transition-colors"
-            >
-              Talk to an advisor <ArrowRight className="size-4" />
-            </Link>
-          </div>
+        <section className="section-container py-20 text-center">
+          <h2 className="text-3xl text-[#1A2332] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Ready to start?
+          </h2>
+          <p className="text-[#4A5668] mb-8 max-w-lg mx-auto">Access the full GSF platform free for 30 days. No credit card required.</p>
+          <Link href="/sign-up" className="btn-primary px-8 py-3.5 text-base mx-auto">
+            Join free <ArrowRight className="size-4" />
+          </Link>
         </section>
       </main>
       <Footer />
