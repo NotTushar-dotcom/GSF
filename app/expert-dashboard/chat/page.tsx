@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 import { Send, Search, Paperclip, MoreVertical, Video, Phone, Smile, Image as ImageIcon } from "lucide-react";
 
 interface Message {
@@ -48,6 +49,8 @@ const INITIAL_MESSAGES: Record<number, Message[]> = {
 const EMOJIS = ["👍", "🔥", "💡", "🎯", "✅", "🚀", "💪", "😊", "🙌", "❤️"];
 
 export default function ExpertChatPage() {
+  const { user: clerkUser } = useUser();
+  const session = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
   const [activeId, setActiveId] = useState(1);
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState("");

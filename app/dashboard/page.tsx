@@ -9,8 +9,8 @@ import {
   BarChart2, Star, Plus, Video, Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
-import type { AuthUser } from "@/lib/auth";
+import { clerkUserToAuthUser } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
 
 // ===== VENTURE STAGES =====
 const STAGES = [
@@ -258,11 +258,8 @@ function CommunityFeedWidget() {
 }
 
 export default function FounderDashboardPage() {
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  useEffect(() => {
-    setUser(getSession());
-  }, []);
+  const { user: clerkUser } = useUser();
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
 
   const credits = user?.credits ?? 600;
   const sessionStats = {

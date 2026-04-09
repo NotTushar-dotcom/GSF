@@ -9,8 +9,8 @@ import {
   MessageSquare, Briefcase, Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
-import type { AuthUser } from "@/lib/auth";
+import { clerkUserToAuthUser } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
 
 // ===== MOCK DATA =====
 const VENTURES_SUPPORTED = [
@@ -144,11 +144,8 @@ function EarningsMeter({ earned }: { earned: number }) {
 }
 
 export default function ExpertDashboardPage() {
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  useEffect(() => {
-    setUser(getSession());
-  }, []);
+  const { user: clerkUser } = useUser();
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
 
   const earned = user?.credits ?? 420;
   const totalSessions = 32;

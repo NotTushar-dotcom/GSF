@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Eye, EyeOff, Rocket, CheckCircle2, Star } from "lucide-react";
-import { setSession } from "@/lib/auth";
+import { useSignUp } from "@clerk/nextjs/legacy";
 
 function GoogleIcon() {
   return (
@@ -21,36 +21,26 @@ function GoogleIcon() {
 
 type Role = "founder" | "expert";
 
-const MOCK_GOOGLE = [
-  { name: "Arjun Sharma",  email: "arjun@gmail.com",  avatar: "AS", role: "founder" as Role },
-  { name: "Riya Mehta",    email: "riya@gmail.com",   avatar: "RM", role: "founder" as Role },
-  { name: "Vikram Nair",   email: "vikram@gmail.com", avatar: "VN", role: "expert"  as Role },
-];
-
-const STEPS = {
-  founder: ["Account", "Identity", "Your Startup", "Interests"],
-  expert:  ["Account", "Identity", "Expertise",    "Availability"],
-};
-
+const STEPS = ["Account", "Your Details", "Interests"];
 const SECTORS  = ["EdTech", "FinTech", "HealthTech", "AgriTech", "ClimaTech", "SaaS", "Consumer", "DeepTech", "Other"];
-const EXP_YARS = ["0–2 years", "2–5 years", "5–10 years", "10–15 years", "15+ years"];
 const DOMAINS  = ["HealthTech", "FinTech", "EdTech", "Product", "Growth", "Legal", "AgriTech", "ClimaTech", "SaaS", "DeepTech", "Fundraising", "Operations"];
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [role, setRole] = useState<Role>("founder");
-  const [step, setStep] = useState(0);
-  const [showPw, setShowPw] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [googlePickerOpen, setGooglePickerOpen] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleSuccess, setGoogleSuccess] = useState(false);
+  const { signUp, isLoaded } = useSignUp();
 
-  /* Form state — combined for both roles */
+  const [role, setRole]       = useState<Role>("founder");
+  const [step, setStep]       = useState(0);
+  const [showPw, setShowPw]   = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [verifying, setVerifying]   = useState(false);
+  const [error, setError]     = useState("");
+  const [code, setCode]       = useState("");
+
   const [f, setF] = useState({
     firstName: "", lastName: "", email: "", password: "",
-    /* founder fields */ university: "", year: "", ventureName: "", sector: "", stage: "Ideation", bio: "",
-    /* expert fields */ company: "", title: "", experience: "", linkedin: "", website: "",
+    university: "", ventureName: "", sector: "", stage: "Ideation",
+    company: "", title: "", experience: "",
     specializations: [] as string[],
   });
 
@@ -60,32 +50,79 @@ export default function SignUpPage() {
   function toggleSpec(d: string) {
     setF(prev => ({
       ...prev,
-      specializations: prev.specializations.includes(d) ? prev.specializations.filter(x => x !== d) : [...prev.specializations, d],
+      specializations: prev.specializations.includes(d)
+        ? prev.specializations.filter(x => x !== d)
+        : [...prev.specializations, d],
     }));
   }
 
-  const steps = STEPS[role];
-  const isLast = step === steps.length - 1;
-  const pct = ((step) / (steps.length - 1)) * 100;
+  const isLast = step === STEPS.length - 1;
+  const pct = (step / (STEPS.length - 1)) * 100;
 
-  function handleGooglePick(account: typeof MOCK_GOOGLE[0]) {
-    setGoogleLoading(true);
-    setTimeout(() => {
-      setGoogleLoading(false);
-      setGoogleSuccess(true);
-      setSession({ id: account.role === "expert" ? "2" : "1", name: account.name, email: account.email, role: account.role, avatar: account.avatar, credits: 600, plan: "trial", planExpiresAt: "" });
-      setTimeout(() => router.push(account.role === "expert" ? "/expert-dashboard" : "/dashboard"), 900);
-    }, 1200);
+  async function handleGoogleSignUp() {
+    if (!isLoaded) return;
+    try {
+      await signUp.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/onboarding",
+      });
+    } catch (err: unknown) {
+      const clerkErr = err as { errors?: { message: string }[] };
+      setError(clerkErr?.errors?.[0]?.message ?? "Google sign-up failed.");
+    }
   }
 
-  function handleFinish() {
+  async function createAccount() {
+    if (!isLoaded) return;
     setSubmitting(true);
-    setTimeout(() => {
-      const name = `${f.firstName} ${f.lastName}`.trim() || "New User";
-      const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
-      setSession({ id: "9", name, email: f.email, role, avatar: initials, credits: 600, plan: "trial", planExpiresAt: "" });
-      router.push(role === "expert" ? "/expert-dashboard" : "/dashboard");
-    }, 1000);
+    setError("");
+    try {
+      await signUp.create({
+        firstName: f.firstName,
+        lastName: f.lastName,
+        emailAddress: f.email,
+        password: f.password,
+      });
+      // Send email verification
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setVerifying(true);
+    } catch (err: unknown) {
+      const clerkErr = err as { errors?: { message: string }[] };
+      setError(clerkErr?.errors?.[0]?.message ?? "Could not create account.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function verifyEmail() {
+    if (!isLoaded) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const result = await signUp.attemptEmailAddressVerification({ code });
+      if (result.status === "complete") {
+        // Account created — now go to onboarding to set role
+        router.push("/onboarding");
+      } else {
+        setError("Verification could not complete. Please try again.");
+      }
+    } catch (err: unknown) {
+      const clerkErr = err as { errors?: { message: string }[] };
+      setError(clerkErr?.errors?.[0]?.message ?? "Invalid code.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleNext() {
+    if (step === 0 && !verifying) {
+      createAccount();
+    } else if (isLast) {
+      router.push("/onboarding");
+    } else {
+      setStep(s => s + 1);
+    }
   }
 
   return (
@@ -104,221 +141,180 @@ export default function SignUpPage() {
           <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Free for 30 days · No credit card needed</p>
         </div>
 
-        {/* Stepper */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            {steps.map((s, i) => (
-              <div key={s} className="flex items-center">
-                <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${i <= step ? "text-white shadow-md" : "border"}`}
-                  style={{
-                    backgroundColor: i < step ? "#10B981" : i === step ? "var(--accent-indigo)" : "transparent",
-                    borderColor: i > step ? "var(--border-default)" : "transparent",
-                    color: i > step ? "var(--text-muted)" : "white",
-                  }}>
-                  {i < step ? "✓" : i + 1}
+        {/* Step progress */}
+        {!verifying && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              {STEPS.map((s, i) => (
+                <div key={s} className="flex items-center">
+                  <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${i <= step ? "text-white shadow-md" : "border"}`}
+                    style={{
+                      backgroundColor: i < step ? "#10B981" : i === step ? "var(--accent-indigo)" : "transparent",
+                      borderColor: i > step ? "var(--border-default)" : "transparent",
+                      color: i > step ? "var(--text-muted)" : "white",
+                    }}>
+                    {i < step ? <CheckCircle2 className="size-3.5" /> : i + 1}
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div className="h-px flex-1 mx-1 w-10 transition-all" style={{ backgroundColor: i < step ? "#10B981" : "var(--border-default)" }} />
+                  )}
                 </div>
-                {i < steps.length - 1 && (
-                  <div className="h-px flex-1 mx-1 w-8 transition-all" style={{ backgroundColor: i < step ? "#10B981" : "var(--border-default)" }} />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="progress-bar" style={{ height: "3px" }}>
+              <motion.div className="h-full rounded-full"
+                style={{ background: "linear-gradient(to right, #5B6CFF, #4FD1C5)", width: `${pct}%` }}
+                animate={{ width: `${pct}%` }} transition={{ duration: 0.4 }} />
+            </div>
+            <p className="text-xs mt-1.5 font-medium" style={{ color: "var(--accent-indigo)" }}>{STEPS[step]}</p>
           </div>
-          <div className="progress-bar" style={{ height: "3px" }}>
-            <motion.div className="h-full rounded-full"
-              style={{ background: "linear-gradient(to right, #5B6CFF, #4FD1C5)", width: `${pct}%` }}
-              animate={{ width: `${pct}%` }} transition={{ duration: 0.4 }} />
-          </div>
-          <p className="text-xs mt-1.5 font-medium" style={{ color: "var(--accent-indigo)" }}>{steps[step]}</p>
-        </div>
+        )}
 
         <div className="card p-7">
           <AnimatePresence mode="wait">
-            <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+            {verifying ? (
+              /* Email Verification Step */
+              <motion.div key="verify" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="text-center mb-6">
+                  <CheckCircle2 className="size-10 text-emerald-500 mx-auto mb-3" />
+                  <h2 className="font-semibold text-base mb-1" style={{ color: "var(--text-primary)" }}>Check your email</h2>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    We sent a 6-digit code to <strong>{f.email}</strong>
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Verification Code</label>
+                  <input
+                    type="text"
+                    className="input text-center text-2xl tracking-[0.4em] font-bold"
+                    value={code}
+                    onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    maxLength={6}
+                  />
+                </div>
+                {error && <p className="text-xs text-red-500 mt-2 p-2 rounded-lg" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>{error}</p>}
+                <button onClick={verifyEmail} disabled={submitting || code.length < 6} className="btn-primary w-full justify-center py-2.5 mt-4">
+                  {submitting ? <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <><CheckCircle2 className="size-4" /> Verify Email</>}
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
 
-              {/* ── STEP 0: Account ── */}
-              {step === 0 && (
-                <div className="space-y-4">
-                  {/* Role selector */}
-                  <div>
-                    <label className="block text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>I am joining as a</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(["founder", "expert"] as Role[]).map(r => (
-                        <button key={r} onClick={() => setRole(r)}
-                          className="flex flex-col items-center p-3 rounded-xl border transition-all"
-                          style={role === r
-                            ? { border: "2px solid var(--accent-indigo)", backgroundColor: "rgba(91,108,255,0.08)" }
-                            : { border: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface-2)" }}>
-                          {r === "founder"
-                            ? <Rocket className="size-5 mb-1 text-[var(--accent-indigo)]" />
-                            : <Star className="size-5 mb-1 text-amber-400" />}
-                          <span className="text-xs font-semibold capitalize" style={{ color: "var(--text-primary)" }}>{r}</span>
-                        </button>
-                      ))}
+                {/* STEP 0: Account */}
+                {step === 0 && (
+                  <div className="space-y-4">
+                    {/* Role picker */}
+                    <div>
+                      <label className="block text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>I am joining as a</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(["founder", "expert"] as Role[]).map(r => (
+                          <button key={r} onClick={() => setRole(r)}
+                            className="flex flex-col items-center p-3 rounded-xl border transition-all"
+                            style={role === r
+                              ? { border: "2px solid var(--accent-indigo)", backgroundColor: "rgba(91,108,255,0.08)" }
+                              : { border: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface-2)" }}>
+                            {r === "founder" ? <Rocket className="size-5 mb-1 text-[var(--accent-indigo)]" /> : <Star className="size-5 mb-1 text-amber-400" />}
+                            <span className="text-xs font-semibold capitalize" style={{ color: "var(--text-primary)" }}>{r}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Google button */}
-                  <div className="relative">
-                    <button onClick={() => setGooglePickerOpen(true)}
+                    {/* Google */}
+                    <button onClick={handleGoogleSignUp}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all hover:shadow-md"
                       style={{ backgroundColor: "var(--bg-surface)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
                       <GoogleIcon /> Continue with Google
                     </button>
-                    <AnimatePresence>
-                      {googlePickerOpen && (
-                        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
-                          className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden z-50 shadow-[0_8px_40px_rgba(0,0,0,0.18)]"
-                          style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
-                          <div className="px-4 py-3 border-b" style={{ borderBottomColor: "var(--border-soft)" }}>
-                            <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Choose an account · {role}</p>
+
+                    <div className="relative my-1">
+                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t" style={{ borderTopColor: "var(--border-soft)" }} /></div>
+                      <div className="relative flex justify-center"><span className="px-3 text-xs" style={{ backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}>or with email</span></div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>First name</label>
+                        <input className="input" value={f.firstName} onChange={e => field("firstName", e.target.value)} placeholder="Arjun" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Last name</label>
+                        <input className="input" value={f.lastName} onChange={e => field("lastName", e.target.value)} placeholder="Sharma" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
+                      <input type="email" className="input" value={f.email} onChange={e => field("email", e.target.value)} placeholder={role === "founder" ? "you@university.edu" : "expert@company.com"} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Password</label>
+                      <div className="relative">
+                        <input type={showPw ? "text" : "password"} className="input pr-10" value={f.password} onChange={e => field("password", e.target.value)} placeholder="Min. 8 characters" />
+                        <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }}>
+                          {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 1: Your Details */}
+                {step === 1 && (
+                  <div className="space-y-4">
+                    {role === "founder" ? (
+                      <>
+                        <div>
+                          <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>University / Institution</label>
+                          <input className="input" value={f.university} onChange={e => field("university", e.target.value)} placeholder="IIT Delhi" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Startup / Venture name (optional)</label>
+                          <input className="input" value={f.ventureName} onChange={e => field("ventureName", e.target.value)} placeholder="My Startup" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Sector</label>
+                          <select className="input" value={f.sector} onChange={e => field("sector", e.target.value)}>
+                            <option value="">Select sector…</option>
+                            {SECTORS.map(s => <option key={s}>{s}</option>)}
+                          </select>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Current Title</label>
+                          <input className="input" value={f.title} onChange={e => field("title", e.target.value)} placeholder="VC Partner / ex-Founder" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Company</label>
+                          <input className="input" value={f.company} onChange={e => field("company", e.target.value)} placeholder="Sequoia Capital" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Years of experience</label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {["0–5 years", "5–10 years", "10–15 years", "15+ years"].map(e => (
+                              <button key={e} onClick={() => field("experience", e)}
+                                className="py-2 px-3 rounded-xl text-xs font-medium border transition-all"
+                                style={f.experience === e
+                                  ? { backgroundColor: "rgba(91,108,255,0.12)", borderColor: "var(--accent-indigo)", color: "var(--accent-indigo)" }
+                                  : { backgroundColor: "var(--bg-surface-2)", borderColor: "var(--border-default)", color: "var(--text-muted)" }}>
+                                {e}
+                              </button>
+                            ))}
                           </div>
-                          {googleLoading ? (
-                            <div className="flex items-center justify-center py-6">
-                              <div className="size-6 rounded-full border-2 border-t-[#4285F4] animate-spin" style={{ borderColor: "var(--border-default)", borderTopColor: "#4285F4" }} />
-                            </div>
-                          ) : googleSuccess ? (
-                            <div className="flex items-center justify-center gap-2 py-5 text-emerald-500">
-                              <CheckCircle2 className="size-5" /><span className="text-sm font-medium">Redirecting to profile setup…</span>
-                            </div>
-                          ) : (
-                            <>
-                              {MOCK_GOOGLE.filter(a => a.role === role).map(account => (
-                                <button key={account.email} onClick={() => handleGooglePick(account)}
-                                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
-                                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--bg-surface-2)")}
-                                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
-                                  style={{ borderBottom: "1px solid var(--border-soft)" }}>
-                                  <div className="size-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: "linear-gradient(135deg, #4285F4, #34A853)" }}>{account.avatar}</div>
-                                  <div>
-                                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{account.name}</p>
-                                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{account.email}</p>
-                                  </div>
-                                </button>
-                              ))}
-                              <button onClick={() => setGooglePickerOpen(false)} className="w-full py-2.5 text-xs text-center" style={{ color: "var(--text-muted)" }}>Use another account</button>
-                            </>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        </div>
+                      </>
+                    )}
                   </div>
+                )}
 
-                  <div className="relative my-1">
-                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t" style={{ borderTopColor: "var(--border-soft)" }} /></div>
-                    <div className="relative flex justify-center"><span className="px-3 text-xs" style={{ backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}>or with email</span></div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>First name</label>
-                      <input className="input" value={f.firstName} onChange={e => field("firstName", e.target.value)} placeholder="Arjun" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Last name</label>
-                      <input className="input" value={f.lastName} onChange={e => field("lastName", e.target.value)} placeholder="Sharma" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
-                    <input type="email" className="input" value={f.email} onChange={e => field("email", e.target.value)} placeholder={role === "founder" ? "you@university.edu" : "expert@company.com"} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Password</label>
-                    <div className="relative">
-                      <input type={showPw ? "text" : "password"} className="input pr-10" value={f.password} onChange={e => field("password", e.target.value)} placeholder="Min. 8 characters" />
-                      <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }}>
-                        {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ── STEP 1: Identity ── */}
-              {step === 1 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Bio (tell us about yourself)</label>
-                    <textarea className="input textarea" placeholder="I'm building in the EdTech space…" value={f.bio} onChange={e => field("bio", e.target.value)} />
-                  </div>
-                  {role === "founder" ? (
-                    <>
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>University / Institution</label>
-                        <input className="input" value={f.university} onChange={e => field("university", e.target.value)} placeholder="IIT Delhi" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Year of study</label>
-                        <select className="input" value={f.year} onChange={e => field("year", e.target.value)}>
-                          <option value="">Select year</option>
-                          {["1st Year", "2nd Year", "3rd Year", "4th Year", "Masters", "PhD", "Alumni"].map(y => <option key={y}>{y}</option>)}
-                        </select>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Current Title</label>
-                        <input className="input" value={f.title} onChange={e => field("title", e.target.value)} placeholder="VC Partner / ex-Founder / Product Lead" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Company / Organisation</label>
-                        <input className="input" value={f.company} onChange={e => field("company", e.target.value)} placeholder="Sequoia Capital" />
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* ── STEP 2: Founder = Startup | Expert = Expertise ── */}
-              {step === 2 && role === "founder" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Startup / Venture name</label>
-                    <input className="input" value={f.ventureName} onChange={e => field("ventureName", e.target.value)} placeholder="My Startup (or leave blank if idea stage)" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Sector</label>
-                    <select className="input" value={f.sector} onChange={e => field("sector", e.target.value)}>
-                      <option value="">Select sector…</option>
-                      {SECTORS.map(s => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Current stage</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {["Ideation", "Research", "MVP", "Funding", "Launch", "PMF"].map(s => (
-                        <button key={s} onClick={() => field("stage", s)}
-                          className="py-2 px-3 rounded-xl text-xs font-medium border transition-all"
-                          style={f.stage === s
-                            ? { backgroundColor: "rgba(91,108,255,0.12)", borderColor: "var(--accent-indigo)", color: "var(--accent-indigo)" }
-                            : { backgroundColor: "var(--bg-surface-2)", borderColor: "var(--border-default)", color: "var(--text-muted)" }}>
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {step === 2 && role === "expert" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Years of experience</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {EXP_YARS.map(e => (
-                        <button key={e} onClick={() => field("experience", e)}
-                          className="py-2 px-3 rounded-xl text-xs font-medium border transition-all"
-                          style={f.experience === e
-                            ? { backgroundColor: "rgba(91,108,255,0.12)", borderColor: "var(--accent-indigo)", color: "var(--accent-indigo)" }
-                            : { backgroundColor: "var(--bg-surface-2)", borderColor: "var(--border-default)", color: "var(--text-muted)" }}>
-                          {e}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>Specializations (pick all that apply)</label>
+                {/* STEP 2: Interests */}
+                {step === 2 && (
+                  <div className="space-y-4">
+                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      {role === "founder" ? "What kind of help are you looking for?" : "Select your specializations"}
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {DOMAINS.map(d => (
                         <button key={d} onClick={() => toggleSpec(d)}
@@ -330,86 +326,53 @@ export default function SignUpPage() {
                         </button>
                       ))}
                     </div>
+                    <div className="p-4 rounded-2xl" style={{ backgroundColor: "rgba(91,108,255,0.06)", border: "1px solid rgba(91,108,255,0.15)" }}>
+                      <p className="text-xs font-semibold mb-1 flex items-center gap-1.5" style={{ color: "var(--accent-indigo)" }}>
+                        <CheckCircle2 className="size-3.5" /> Basic plan free for 30 days
+                      </p>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>600 credits included. No credit card required to start.</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* ── STEP 3: Founder = Interests | Expert = Availability & Socials ── */}
-              {step === 3 && role === "founder" && (
-                <div className="space-y-4">
-                  <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>What kind of expert sessions are you looking for?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {["Fundraising", "Product", "Growth", "Legal", "Technical", "Marketing", "Mental Health", "Finance"].map(d => (
-                      <button key={d} onClick={() => toggleSpec(d)}
-                        className="badge text-xs transition-all"
-                        style={f.specializations.includes(d)
-                          ? { backgroundColor: "rgba(91,108,255,0.15)", color: "var(--accent-indigo)", border: "1px solid rgba(91,108,255,0.4)" }
-                          : { backgroundColor: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="p-4 rounded-2xl" style={{ backgroundColor: "rgba(91,108,255,0.06)", border: "1px solid rgba(91,108,255,0.15)" }}>
-                    <p className="text-xs font-semibold mb-1 flex items-center gap-1.5" style={{ color: "var(--accent-indigo)" }}>
-                      <CheckCircle2 className="size-3.5" /> Your Basic plan is free for 30 days
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>600 credits included. Auto-converts to Basic (₹499/mo) unless cancelled.</p>
-                  </div>
-                </div>
-              )}
-
-              {step === 3 && role === "expert" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>LinkedIn profile URL</label>
-                    <input className="input" value={f.linkedin} onChange={e => field("linkedin", e.target.value)} placeholder="linkedin.com/in/yourname" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Personal website (optional)</label>
-                    <input className="input" value={f.website} onChange={e => field("website", e.target.value)} placeholder="yourname.com" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Weekly availability (sessions)</label>
-                    <select className="input">
-                      {["1–2 sessions/week", "3–4 sessions/week", "5+ sessions/week", "Flexible"].map(o => <option key={o}>{o}</option>)}
-                    </select>
-                  </div>
-                  <div className="p-4 rounded-2xl" style={{ backgroundColor: "rgba(79,209,197,0.06)", border: "1px solid rgba(79,209,197,0.2)" }}>
-                    <p className="text-xs font-semibold mb-1" style={{ color: "#0E9F8E" }}>✓ GSF Expert Review</p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your profile goes to GSF review. You&apos;ll earn credits for every completed session.</p>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+              </motion.div>
+            )}
           </AnimatePresence>
 
-          {/* Buttons */}
-          <div className="flex gap-3 mt-6">
-            {step > 0 && (
-              <button onClick={() => setStep(s => s - 1)} className="btn-outline flex-1 py-2.5 justify-center">
-                ← Back
-              </button>
-            )}
-            <button
-              onClick={() => isLast ? handleFinish() : setStep(s => s + 1)}
-              disabled={submitting}
-              className="btn-primary flex-1 py-2.5 justify-center"
-            >
-              {submitting ? (
-                <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-              ) : isLast ? (
-                <><Rocket className="size-3.5" /> {role === "founder" ? "Go to Dashboard" : "Submit Profile"}</>
-              ) : (
-                <>Continue <ArrowRight className="size-3.5" /></>
+          {!verifying && (
+            <>
+              {error && (
+                <p className="text-xs text-red-500 mt-3 p-2 rounded-lg" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>{error}</p>
               )}
-            </button>
-          </div>
+              <div className="flex gap-3 mt-6">
+                {step > 0 && (
+                  <button onClick={() => setStep(s => s - 1)} className="btn-outline flex-1 py-2.5 justify-center">
+                    Back
+                  </button>
+                )}
+                <button
+                  onClick={handleNext}
+                  disabled={submitting || !isLoaded}
+                  className="btn-primary flex-1 py-2.5 justify-center"
+                >
+                  {submitting
+                    ? <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    : isLast
+                      ? <><Rocket className="size-3.5" /> Go to Dashboard</>
+                      : step === 0
+                        ? <><ArrowRight className="size-3.5" /> Create Account</>
+                        : <><ArrowRight className="size-3.5" /> Continue</>
+                  }
+                </button>
+              </div>
 
-          {step === 0 && (
-            <p className="text-center text-xs mt-4" style={{ color: "var(--text-muted)" }}>
-              Already have an account?{" "}
-              <Link href="/login" className="font-medium" style={{ color: "var(--accent-indigo)" }}>Sign in</Link>
-            </p>
+              {step === 0 && (
+                <p className="text-center text-xs mt-4" style={{ color: "var(--text-muted)" }}>
+                  Already have an account?{" "}
+                  <Link href="/login" className="font-medium" style={{ color: "var(--accent-indigo)" }}>Sign in</Link>
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -419,10 +382,6 @@ export default function SignUpPage() {
           <Link href="/terms" className="underline">Terms</Link>.
         </p>
       </div>
-
-      {googlePickerOpen && !googleLoading && !googleSuccess && (
-        <div className="fixed inset-0 z-40" onClick={() => setGooglePickerOpen(false)} />
-      )}
     </main>
   );
 }

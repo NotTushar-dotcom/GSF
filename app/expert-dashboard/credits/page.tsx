@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 import { Coins, ArrowUpRight, BarChart2, TrendingUp, Zap, CreditCard, ShoppingBag, Star } from "lucide-react";
 
 const TRANSACTIONS = [
@@ -27,12 +28,9 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function ExpertCreditsPage() {
-  const [earned, setEarned] = useState(420);
-
-  useEffect(() => {
-    const s = getSession();
-    if (s) setEarned(s.credits);
-  }, []);
+  const { user: clerkUser } = useUser();
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
+  const earned = user?.credits ?? 420;
 
   const monthlyTarget = 500;
   const pct = Math.min(100, (earned / monthlyTarget) * 100);

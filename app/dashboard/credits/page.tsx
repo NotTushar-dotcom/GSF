@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 import { Coins, TrendingUp, ArrowDownRight, ArrowUpRight, Zap, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
@@ -26,12 +27,9 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function CreditsPage() {
-  const [credits, setCredits] = useState(600);
-
-  useEffect(() => {
-    const s = getSession();
-    if (s) setCredits(s.credits);
-  }, []);
+  const { user: clerkUser } = useUser();
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
+  const credits = user?.credits ?? 600;
 
   const pct = Math.min(100, (credits / 600) * 100);
 

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Zap, TrendingUp, BookOpen, Users, ArrowRight, Calendar, Clock, ChevronRight, X, Shield, Lock, Mail } from "lucide-react";
+import { Zap, TrendingUp, BookOpen, Users, ArrowRight, Calendar, Clock, ChevronRight, X, Shield, Lock, Mail, Plus } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 const CATEGORIES = ["All", "Founder Strategy", "Fundraising", "Product", "Community", "Growth"];
 
@@ -620,6 +621,8 @@ const fadeUp = (delay = 0) => ({
 });
 
 export default function InsightsPage() {
+  const { user } = useUser();
+  const isGsfTeam = user?.emailAddresses?.some(e => e.emailAddress.includes("@gsf"));
   const [activeCategory, setActiveCategory] = useState("All");
   const [openArticle,    setOpenArticle]    = useState<Article | null>(null);
   const [email,          setEmail]          = useState("");
@@ -663,6 +666,14 @@ export default function InsightsPage() {
                 <Lock className="size-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
               </div>
             </motion.div>
+
+            {isGsfTeam && (
+              <motion.div {...fadeUp(0.12)} className="flex justify-center mt-6">
+                <button className="btn-primary text-sm py-2 px-5 flex items-center gap-2" onClick={() => alert("Post Article feature coming soon!")}>
+                  <Plus className="size-4" /> Post Article
+                </button>
+              </motion.div>
+            )}
 
             {/* Stats */}
             <motion.div {...fadeUp(0.15)} className="flex flex-wrap items-center justify-center gap-8 mt-10">

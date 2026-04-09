@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 import { Lightbulb, Edit3, TrendingUp, Users, DollarSign, Save, Plus, Trash2 } from "lucide-react";
 
 const STAGES = ["Ideation", "Screening", "Research", "MVP", "Funding", "Launch", "PMF"];
@@ -16,6 +17,8 @@ const fadeUp = (delay = 0) => ({
 });
 
 export default function MyVenturePage() {
+  const { user: clerkUser } = useUser();
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
@@ -31,7 +34,7 @@ export default function MyVenturePage() {
     pitchDeckUrl: "",
   });
 
-  useEffect(() => { getSession(); }, []);
+
 
   function handleSave() {
     setSaved(true);

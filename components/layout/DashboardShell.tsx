@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { getSession, logout } from "@/lib/auth";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 import type { AuthUser } from "@/lib/auth";
 import {
   LayoutDashboard, Lightbulb, TrendingUp, Users, MessageSquare,
@@ -44,31 +45,30 @@ interface DashboardShellProps {
 export function DashboardShell({ children, role }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen]   = useState(false);
-  const [user, setUser]               = useState<AuthUser | null>(null);
-  const [ready, setReady]             = useState(false);
   const [notifCount]                  = useState(3);
   const pathname = usePathname();
   const router   = useRouter();
+  
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
 
   const links = role === "founder" ? FOUNDER_LINKS : EXPERT_LINKS;
 
   useEffect(() => {
-    // Small delay so sessionStorage is available after client-side navigation
-    const timer = setTimeout(() => {
-      const session = getSession();
-      if (!session || session.role !== role) {
+    if (isLoaded) {
+      if (!user) {
         router.replace("/login");
-        return;
+      } else if (user.role !== role) {
+        router.replace(role === "founder" ? "/expert-dashboard" : "/dashboard");
       }
-      setUser(session);
       setMobileOpen(false);
-      setReady(true);
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [pathname, role, router]);
+    }
+  }, [isLoaded, user, role, router, pathname]);
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await signOut();
     router.push("/");
   }
 
@@ -173,7 +173,7 @@ export function DashboardShell({ children, role }: DashboardShellProps) {
     </div>
   );
 
-  if (!ready) {
+  if (!isLoaded || !user) {
     return (
       <div className="flex h-screen items-center justify-center" style={{ backgroundColor: "var(--bg-canvas)" }}>
         <div className="flex flex-col items-center gap-3">

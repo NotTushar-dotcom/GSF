@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Eye, EyeOff, CheckCircle2, Rocket, Star } from "lucide-react";
-import { useSignIn } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs/legacy";
 
 /* Google icon */
 function GoogleIcon() {

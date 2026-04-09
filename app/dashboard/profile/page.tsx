@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getSession } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
+import { clerkUserToAuthUser } from "@/lib/auth";
 import type { AuthUser } from "@/lib/auth";
 import { User, Edit3, Save, Mail, Globe, Link2, MapPin, Camera } from "lucide-react";
 
@@ -14,7 +15,9 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const { user: clerkUser } = useUser();
+  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
+  
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
@@ -29,12 +32,10 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    const s = getSession();
-    if (s) {
-      setUser(s);
-      setForm(prev => ({ ...prev, email: s.email, name: s.name }));
+    if (user) {
+      setForm(prev => ({ ...prev, email: user.email, name: user.name }));
     }
-  }, []);
+  }, [user?.email, user?.name]);
 
   function handleSave() {
     setSaved(true);
