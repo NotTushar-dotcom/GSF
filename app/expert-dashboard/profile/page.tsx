@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { useUser } from "@clerk/nextjs";
-import { clerkUserToAuthUser } from "@/lib/auth";
-import type { AuthUser } from "@/lib/auth";
-import { Edit3, Save, Mail, Globe, Link2, MapPin, Camera, Star, Award, Briefcase, Plus, Trash2 } from "lucide-react";
+import { useProfile } from "@/lib/hooks/useProfile";
+import { useExpertProfile } from "@/lib/hooks/useExpertProfile";
+import Image from "next/image";
+import { Edit3, Save, Mail, Globe, Link2, MapPin, Camera, Star, Award, Briefcase } from "lucide-react";
 
-const DOMAINS_ALL = ["HealthTech", "FinTech", "EdTech", "Product", "Growth", "Legal", "AgriTech", "ClimaTech", "SaaS", "DeepTech"];
+const DOMAINS_ALL = ["HealthTech","FinTech","EdTech","Product","Growth","Legal","AgriTech","ClimaTech","SaaS","DeepTech","Fundraising"];
 
 const fadeUp = (d = 0) => ({
   initial: { opacity: 0, y: 16 },
@@ -17,36 +17,72 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function ExpertProfilePage() {
-  const { user: clerkUser } = useUser();
-  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
-  
+  const { profile,        loading: profileLoading,  saving: profileSaving,  updateProfile       } = useProfile();
+  const { profile: ep,   loading: epLoading,        saving: epSaving,       updateExpertProfile } = useExpertProfile();
+
   const [editing, setEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved,   setSaved]   = useState(false);
+
   const [form, setForm] = useState({
-    name: "Vikram Nair",
-    bio: "VC Partner at Sequoia Capital India. Former 2x founder (one exit, one still running). Passionate about backing early-stage student founders in FinTech and DeepTech.",
-    company: "Sequoia Capital India",
-    title: "VC Partner",
-    location: "Bengaluru, India",
-    email: "expert@gsf.com",
-    linkedin: "linkedin.com/in/vikramnair",
-    website: "vikramnair.in",
-    sessionRate: "100",
-    weeklySlots: "4",
-    specializations: ["FinTech", "DeepTech", "Fundraising"],
-    experience: "5+ years",
+    name:            "",
+    bio:             "",
+    title:           "",
+    company:         "",
+    location:        "",
+    email:           "",
+    linkedin:        "",
+    website:         "",
+    experience:      "",
+    sessionRate:     "100",
+    weeklySlots:     "4",
+    specializations: [] as string[],
   });
 
+  // Sync from both sources when loaded
   useEffect(() => {
-    if (user) {
-      setForm(prev => ({ ...prev, email: user.email, name: user.name }));
-    }
-  }, [user?.email, user?.name]);
+    setForm(prev => ({
+      ...prev,
+      name:     profile?.name     ?? prev.name,
+      bio:      profile?.bio      ?? prev.bio,
+      location: profile?.location ?? prev.location,
+      email:    profile?.email    ?? prev.email,
+      linkedin: profile?.linkedin ?? prev.linkedin,
+      website:  profile?.website  ?? prev.website,
+    }));
+  }, [profile]);
 
-  function handleSave() {
-    setSaved(true);
-    setEditing(false);
-    setTimeout(() => setSaved(false), 2500);
+  useEffect(() => {
+    if (ep) {
+      setForm(prev => ({
+        ...prev,
+        title:           ep.title           ?? prev.title,
+        company:         ep.company         ?? prev.company,
+        experience:      ep.experience      ?? prev.experience,
+        sessionRate:     String(ep.sessionRate ?? 100),
+        weeklySlots:     String(ep.weeklySlots ?? 4),
+        specializations: ep.specializations ?? prev.specializations,
+      }));
+    }
+  }, [ep]);
+
+  const loading = profileLoading || epLoading;
+  const saving  = profileSaving  || epSaving;
+
+  async function handleSave() {
+    const [ok1, ok2] = await Promise.all([
+      updateProfile({ name: form.name, bio: form.bio, location: form.location, linkedin: form.linkedin, website: form.website }),
+      updateExpertProfile({
+        title: form.title, company: form.company, experience: form.experience,
+        sessionRate: parseInt(form.sessionRate) || 100,
+        weeklySlots: parseInt(form.weeklySlots) || 4,
+        specializations: form.specializations,
+      }),
+    ]);
+    if (ok1 && ok2) {
+      setSaved(true);
+      setEditing(false);
+      setTimeout(() => setSaved(false), 2500);
+    }
   }
 
   function toggleSpec(domain: string) {
@@ -56,6 +92,21 @@ export default function ExpertProfilePage() {
         ? prev.specializations.filter(d => d !== domain)
         : [...prev.specializations, domain],
     }));
+  }
+
+  const avatarInitials = form.name
+    ? form.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : "??";
+
+  if (loading) {
+    return (
+      <DashboardShell role="expert">
+        <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
+          <div className="h-8 w-48 rounded-xl" style={{ backgroundColor: "var(--bg-surface-2)" }} />
+          <div className="card p-6 h-32" />
+        </div>
+      </DashboardShell>
+    );
   }
 
   return (
@@ -79,8 +130,8 @@ export default function ExpertProfilePage() {
             {editing ? (
               <>
                 <button onClick={() => setEditing(false)} className="btn-outline text-sm py-2 px-4">Cancel</button>
-                <button onClick={handleSave} className="btn-primary text-sm py-2 px-5 flex items-center gap-1.5">
-                  <Save className="size-3.5" /> Save
+                <button onClick={handleSave} disabled={saving} className="btn-primary text-sm py-2 px-5 flex items-center gap-1.5">
+                  <Save className="size-3.5" /> {saving ? "Saving…" : "Save"}
                 </button>
               </>
             ) : (
@@ -95,12 +146,18 @@ export default function ExpertProfilePage() {
         <motion.div {...fadeUp(0.05)} className="card p-6">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="size-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #4FD1C5, #5B6CFF)" }}>
-                {user?.avatar ?? "VN"}
-              </div>
+              {profile?.imageUrl ? (
+                <Image src={profile.imageUrl} alt={form.name} width={80} height={80}
+                  className="size-20 rounded-2xl object-cover flex-shrink-0" />
+              ) : (
+                <div className="size-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #4FD1C5, #5B6CFF)" }}>
+                  {avatarInitials}
+                </div>
+              )}
               {editing && (
-                <button className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md"
+                <button title="Change avatar in Clerk settings"
+                  className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md"
                   style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-default)" }}>
                   <Camera className="size-3.5" style={{ color: "var(--text-muted)" }} />
                 </button>
@@ -117,17 +174,25 @@ export default function ExpertProfilePage() {
                 <span className="badge badge-teal text-xs flex items-center gap-1">
                   <Award className="size-3" /> Verified Expert
                 </span>
-                <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-muted)" }}>
-                  <Briefcase className="size-3" />{form.title} @ {form.company}
-                </span>
-                <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-muted)" }}>
-                  <MapPin className="size-3" />{form.location}
-                </span>
+                {(form.title || form.company) && (
+                  <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                    <Briefcase className="size-3" />{form.title}{form.company ? ` @ ${form.company}` : ""}
+                  </span>
+                )}
+                {form.location && (
+                  <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                    <MapPin className="size-3" />{form.location}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-1 mt-2">
                 {[1,2,3,4,5].map(s => <Star key={s} className="size-3.5 fill-yellow-400 text-yellow-400" />)}
-                <span className="text-xs font-medium ml-1" style={{ color: "var(--text-primary)" }}>4.8</span>
-                <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>(52 reviews)</span>
+                <span className="text-xs font-medium ml-1" style={{ color: "var(--text-primary)" }}>
+                  {ep?.rating ?? "—"}
+                </span>
+                <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>
+                  ({ep?.totalSessions ?? 0} sessions)
+                </span>
               </div>
             </div>
           </div>
@@ -138,25 +203,46 @@ export default function ExpertProfilePage() {
           <motion.div {...fadeUp(0.1)} className="card p-6 space-y-4">
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>About</h3>
             {[
-              { label: "Bio", key: "bio", multiline: true },
-              { label: "Title", key: "title" },
-              { label: "Company", key: "company" },
-              { label: "Location", key: "location" },
-              { label: "Experience", key: "experience" },
+              { label: "Bio",        key: "bio",        multiline: true },
+              { label: "Title",      key: "title"                      },
+              { label: "Company",    key: "company"                    },
+              { label: "Location",   key: "location"                   },
+              { label: "Experience", key: "experience"                  },
             ].map(({ label, key, multiline }) => (
               <div key={key}>
                 <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>{label}</label>
                 {editing ? (
                   multiline ? (
-                    <textarea className="input textarea text-sm" value={String((form as unknown as Record<string, unknown>)[key] ?? "")}
+                    <textarea className="input textarea text-sm" value={(form as unknown as Record<string, string>)[key]}
                       onChange={e => setForm({ ...form, [key]: e.target.value })} />
                   ) : (
-                    <input className="input text-sm" value={String((form as unknown as Record<string, unknown>)[key] ?? "")}
+                    <input className="input text-sm" value={(form as unknown as Record<string, string>)[key]}
                       onChange={e => setForm({ ...form, [key]: e.target.value })} />
                   )
                 ) : (
                   <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    {String((form as unknown as Record<string, unknown>)[key] ?? "") || "—"}
+                    {(form as unknown as Record<string, string>)[key] || "—"}
+                  </p>
+                )}
+              </div>
+            ))}
+            {/* Links */}
+            {[
+              { label: "LinkedIn", key: "linkedin", icon: Link2, type: "url" },
+              { label: "Website",  key: "website",  icon: Globe, type: "url" },
+              { label: "Email",    key: "email",    icon: Mail,  type: "email" },
+            ].map(({ label, key, icon: Icon, type }) => (
+              <div key={key}>
+                <label className="block text-xs font-medium mb-1 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                  <Icon className="size-3" />{label}
+                </label>
+                {editing ? (
+                  <input type={type} className="input text-sm" value={(form as unknown as Record<string, string>)[key]}
+                    onChange={e => setForm({ ...form, [key]: e.target.value })}
+                    disabled={key === "email"} />
+                ) : (
+                  <p className="text-sm" style={{ color: (form as unknown as Record<string, string>)[key] ? "var(--accent-indigo)" : "var(--text-muted)" }}>
+                    {(form as unknown as Record<string, string>)[key] || "Not added"}
                   </p>
                 )}
               </div>
@@ -187,15 +273,6 @@ export default function ExpertProfilePage() {
                   )}
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
-                {editing ? (
-                  <input type="email" className="input text-sm" value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })} />
-                ) : (
-                  <p className="text-sm" style={{ color: "var(--accent-indigo)" }}>{form.email}</p>
-                )}
-              </div>
             </motion.div>
 
             {/* Specializations */}
@@ -204,8 +281,7 @@ export default function ExpertProfilePage() {
               {editing ? (
                 <div className="flex flex-wrap gap-2">
                   {DOMAINS_ALL.map(d => (
-                    <button key={d} onClick={() => toggleSpec(d)}
-                      className="badge text-xs transition-all"
+                    <button key={d} onClick={() => toggleSpec(d)} className="badge text-xs transition-all"
                       style={form.specializations.includes(d)
                         ? { backgroundColor: "rgba(91,108,255,0.15)", color: "var(--accent-indigo)", border: "1px solid rgba(91,108,255,0.4)" }
                         : { backgroundColor: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }
@@ -214,12 +290,14 @@ export default function ExpertProfilePage() {
                     </button>
                   ))}
                 </div>
-              ) : (
+              ) : form.specializations.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {form.specializations.map(d => (
                     <span key={d} className="badge badge-blue text-xs">{d}</span>
                   ))}
                 </div>
+              ) : (
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>No specializations set</p>
               )}
             </motion.div>
           </div>

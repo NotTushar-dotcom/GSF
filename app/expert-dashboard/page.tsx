@@ -9,8 +9,9 @@ import {
   MessageSquare, Briefcase, Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { clerkUserToAuthUser } from "@/lib/auth";
 import { useUser } from "@clerk/nextjs";
+import { useCredits } from "@/lib/hooks/useCredits";
+import { useSessions } from "@/lib/hooks/useSessions";
 
 // ===== MOCK DATA =====
 const VENTURES_SUPPORTED = [
@@ -145,10 +146,11 @@ function EarningsMeter({ earned }: { earned: number }) {
 
 export default function ExpertDashboardPage() {
   const { user: clerkUser } = useUser();
-  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
+  const firstName = clerkUser?.firstName ?? "Expert";
 
-  const earned = user?.credits ?? 420;
-  const totalSessions = 32;
+  const { balance: earned }                                       = useCredits();
+  const { sessions, completed: doneSessions, upcoming, next }     = useSessions();
+  const totalSessions = sessions.length;
 
   return (
     <DashboardShell role="expert">
@@ -158,7 +160,7 @@ export default function ExpertDashboardPage() {
         <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
-              Welcome back, {user?.name?.split(" ")[0] ?? "Expert"}
+              Welcome back, {firstName}
               <Sparkles className="size-5 text-amber-400" />
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>

@@ -9,8 +9,10 @@ import {
   BarChart2, Star, Plus, Video, Sparkles,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { clerkUserToAuthUser } from "@/lib/auth";
 import { useUser } from "@clerk/nextjs";
+import { useCredits } from "@/lib/hooks/useCredits";
+import { useVenture } from "@/lib/hooks/useVenture";
+import { useSessions } from "@/lib/hooks/useSessions";
 
 // ===== VENTURE STAGES =====
 const STAGES = [
@@ -22,13 +24,7 @@ const STAGES = [
   { id: "launch",    label: "Launch",    color: "#EF4444", desc: "Go to market" },
   { id: "pmf",       label: "PMF",       color: "#5B6CFF", desc: "Product-market fit" },
 ];
-const CURRENT_STAGE = 2; // 0-indexed (Research)
-
-const SESSIONS = [
-  { expert: "Meera Patel",  domain: "HealthTech",  status: "completed", date: "Apr 5",  avatar: "MP", cost: 100 },
-  { expert: "Vikram Nair",  domain: "Fintech",     status: "upcoming",  date: "Apr 12", avatar: "VN", cost: 100 },
-  { expert: "Sara Mitchell",domain: "Product",     status: "pending",   date: "Apr 15", avatar: "SM", cost: 200 },
-];
+const CURRENT_STAGE = 2; // fallback — overridden by live venture data below
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -259,13 +255,22 @@ function CommunityFeedWidget() {
 
 export default function FounderDashboardPage() {
   const { user: clerkUser } = useUser();
-  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
+  const firstName = clerkUser?.firstName ?? "Founder";
 
-  const credits = user?.credits ?? 600;
+  const { balance: credits }              = useCredits();
+  const { venture }                       = useVenture();
+  const { completed: doneSessions, upcoming: upcomingSessions } = useSessions();
+
+  // Map venture stage string to STAGES index
+  const liveStageIndex = venture?.stage
+    ? STAGES.findIndex(s => s.label.toLowerCase() === venture.stage!.toLowerCase())
+    : -1;
+  const activeStage = liveStageIndex >= 0 ? liveStageIndex : CURRENT_STAGE;
+
   const sessionStats = {
-    booked: 3,
-    completed: 1,
-    pending: 2,
+    booked:    doneSessions.length + upcomingSessions.length,
+    completed: doneSessions.length,
+    pending:   upcomingSessions.length,
   };
 
   return (
@@ -276,11 +281,11 @@ export default function FounderDashboardPage() {
         <motion.div {...fadeUp(0)} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
-              Good evening, {user?.name?.split(" ")[0] ?? "Founder"}
+              Good evening, {firstName}
               <Sparkles className="size-5 text-amber-400" />
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-              You&apos;re in the <strong>Research</strong> stage. Customer discovery awaits.
+              You&apos;re in the <strong>{venture?.stage ?? "Ideation"}</strong> stage. Keep building!
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -294,10 +299,10 @@ export default function FounderDashboardPage() {
         {/* Top stat cards */}
         <motion.div {...fadeUp(0.05)} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Stage",           value: "Research",  icon: Target,    color: "#06B6D4", bg: "rgba(6,182,212,0.1)" },
-            { label: "Credits Left",    value: `${credits}`, icon: Coins,    color: "#5B6CFF", bg: "rgba(91,108,255,0.1)" },
-            { label: "Sessions Done",   value: "1",          icon: Calendar, color: "#10B981", bg: "rgba(16,185,129,0.1)" },
-            { label: "Idea Score",      value: "78%",        icon: BarChart2,color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
+            { label: "Stage",         value: venture?.stage ?? "Ideation", icon: Target,   color: "#06B6D4", bg: "rgba(6,182,212,0.1)" },
+            { label: "Credits Left",  value: `${credits}`,                  icon: Coins,   color: "#5B6CFF", bg: "rgba(91,108,255,0.1)" },
+            { label: "Sessions Done", value: `${sessionStats.completed}`,   icon: Calendar,color: "#10B981", bg: "rgba(16,185,129,0.1)" },
+            { label: "Upcoming",      value: `${sessionStats.pending}`,     icon: BarChart2,color:"#F59E0B", bg: "rgba(245,158,11,0.1)" },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className="stat-card hover-scale">
               <div className="flex items-center gap-3">
@@ -411,36 +416,39 @@ export default function FounderDashboardPage() {
               </div>
 
               <div className="space-y-3">
-                {SESSIONS.map(({ expert, domain, status, date, avatar, cost }) => (
-                  <div
-                    key={expert}
-                    className="flex items-center gap-3 p-3 rounded-xl hover-scale cursor-pointer"
-                    style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-soft)" }}
-                  >
+                {upcomingSessions.length === 0 && doneSessions.length === 0 ? (
+                  <p className="text-sm text-center py-4" style={{ color: "var(--text-muted)" }}>
+                    No sessions yet.{" "}
+                    <Link href="/dashboard/experts" style={{ color: "var(--accent-indigo)" }}>Book your first expert →</Link>
+                  </p>
+                ) : [...doneSessions, ...upcomingSessions].slice(0, 4).map((s) => {
+                  const initials = (s.expertName ?? "??").split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+                  const dateStr  = s.scheduledAt ? new Date(s.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+                  return (
                     <div
-                      className="size-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                      style={{ background: "linear-gradient(135deg, #5B6CFF, #4A58E8)" }}
+                      key={s.id}
+                      className="flex items-center gap-3 p-3 rounded-xl hover-scale cursor-pointer"
+                      style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-soft)" }}
                     >
-                      {avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{expert}</p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>{domain} · {date}</p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs font-medium" style={{ color: "var(--accent-indigo)" }}>-{cost} cr</span>
-                      <span
-                        className={`badge text-[10px] ${
-                          status === "completed" ? "badge-live"
-                          : status === "upcoming" ? "badge-blue"
-                          : "badge-warn"
-                        }`}
+                      <div
+                        className="size-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                        style={{ background: "linear-gradient(135deg, #5B6CFF, #4A58E8)" }}
                       >
-                        {status}
-                      </span>
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{s.expertName || "Expert"}</p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{s.ventureName} · {dateStr} · {s.duration}min</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs font-medium" style={{ color: "var(--accent-indigo)" }}>-{s.creditsCost} cr</span>
+                        <span className={`badge text-[10px] ${s.status === "completed" ? "badge-live" : s.status === "confirmed" ? "badge-blue" : "badge-warn"}`}>
+                          {s.status}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </div>

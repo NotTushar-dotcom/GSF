@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { useUser } from "@clerk/nextjs";
-import { clerkUserToAuthUser } from "@/lib/auth";
-import type { AuthUser } from "@/lib/auth";
+import { useProfile } from "@/lib/hooks/useProfile";
 import { User, Edit3, Save, Mail, Globe, Link2, MapPin, Camera } from "lucide-react";
+import Image from "next/image";
 
 const fadeUp = (d = 0) => ({
   initial: { opacity: 0, y: 16 },
@@ -15,32 +14,71 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function ProfilePage() {
-  const { user: clerkUser } = useUser();
-  const user = clerkUser ? clerkUserToAuthUser(clerkUser) : null;
-  
+  const { profile, loading, saving, updateProfile } = useProfile();
+
   const [editing, setEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved,   setSaved]   = useState(false);
   const [form, setForm] = useState({
-    name: "Arjun Sharma",
-    bio: "Student founder building in EdTech. Passionate about peer learning and collaborative education. Studying CS at IIT Delhi.",
-    university: "IIT Delhi",
-    year: "3rd Year",
-    location: "New Delhi, India",
-    email: "abc123@gmail.com",
-    linkedin: "linkedin.com/in/arjunsharma",
-    website: "",
+    name:       "",
+    bio:        "",
+    university: "",
+    year:       "",
+    location:   "",
+    email:      "",
+    linkedin:   "",
+    website:    "",
   });
 
+  // Sync form when profile loads
   useEffect(() => {
-    if (user) {
-      setForm(prev => ({ ...prev, email: user.email, name: user.name }));
+    if (profile) {
+      setForm({
+        name:       profile.name,
+        bio:        profile.bio,
+        university: profile.university,
+        year:       profile.year,
+        location:   profile.location,
+        email:      profile.email,
+        linkedin:   profile.linkedin,
+        website:    profile.website,
+      });
     }
-  }, [user?.email, user?.name]);
+  }, [profile]);
 
-  function handleSave() {
-    setSaved(true);
-    setEditing(false);
-    setTimeout(() => setSaved(false), 2500);
+  async function handleSave() {
+    const ok = await updateProfile({
+      name:       form.name,
+      bio:        form.bio,
+      university: form.university,
+      year:       form.year,
+      location:   form.location,
+      linkedin:   form.linkedin,
+      website:    form.website,
+    });
+    if (ok) {
+      setSaved(true);
+      setEditing(false);
+      setTimeout(() => setSaved(false), 2500);
+    }
+  }
+
+  const avatarInitials = form.name
+    ? form.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : "??";
+
+  if (loading) {
+    return (
+      <DashboardShell role="founder">
+        <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
+          <div className="h-8 w-48 rounded-xl" style={{ backgroundColor: "var(--bg-surface-2)" }} />
+          <div className="card p-6 h-32" />
+          <div className="grid grid-cols-2 gap-6">
+            <div className="card p-6 h-64" />
+            <div className="card p-6 h-64" />
+          </div>
+        </div>
+      </DashboardShell>
+    );
   }
 
   return (
@@ -64,8 +102,8 @@ export default function ProfilePage() {
             {editing ? (
               <>
                 <button onClick={() => setEditing(false)} className="btn-outline text-sm py-2 px-4">Cancel</button>
-                <button onClick={handleSave} className="btn-primary text-sm py-2 px-5 flex items-center gap-1.5">
-                  <Save className="size-3.5" /> Save
+                <button onClick={handleSave} disabled={saving} className="btn-primary text-sm py-2 px-5 flex items-center gap-1.5">
+                  <Save className="size-3.5" /> {saving ? "Saving…" : "Save"}
                 </button>
               </>
             ) : (
@@ -80,12 +118,24 @@ export default function ProfilePage() {
         <motion.div {...fadeUp(0.05)} className="card p-6">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="size-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #5B6CFF, #4FD1C5)" }}>
-                {user?.avatar ?? "AS"}
-              </div>
+              {profile?.imageUrl ? (
+                <Image
+                  src={profile.imageUrl}
+                  alt={form.name}
+                  width={80}
+                  height={80}
+                  className="size-20 rounded-2xl object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="size-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #5B6CFF, #4FD1C5)" }}>
+                  {avatarInitials}
+                </div>
+              )}
               {editing && (
-                <button className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md"
+                <button
+                  title="Change avatar in Clerk profile settings"
+                  className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md"
                   style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-default)" }}>
                   <Camera className="size-3.5" style={{ color: "var(--text-muted)" }} />
                 </button>
@@ -101,9 +151,11 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="badge badge-blue text-xs">Founder</span>
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>{form.university} · {form.year}</span>
-                <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-                  <MapPin className="size-3" />{form.location}
-                </span>
+                {form.location && (
+                  <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                    <MapPin className="size-3" />{form.location}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -116,12 +168,11 @@ export default function ProfilePage() {
               <User className="size-4" style={{ color: "var(--accent-indigo)" }} />
               <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>About</h3>
             </div>
-
             {[
-              { label: "Bio", key: "bio", multiline: true },
-              { label: "University", key: "university" },
-              { label: "Year", key: "year" },
-              { label: "Location", key: "location" },
+              { label: "Bio",        key: "bio",        multiline: true },
+              { label: "University", key: "university"               },
+              { label: "Year",       key: "year"                    },
+              { label: "Location",   key: "location"                },
             ].map(({ label, key, multiline }) => (
               <div key={key} className="mb-4 last:mb-0">
                 <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>{label}</label>
@@ -148,11 +199,10 @@ export default function ProfilePage() {
               <Mail className="size-4" style={{ color: "var(--accent-indigo)" }} />
               <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Contact & Links</h3>
             </div>
-
             {[
               { label: "Email",    key: "email",    icon: Mail,  type: "email" },
-              { label: "LinkedIn", key: "linkedin", icon: Link2, type: "url" },
-              { label: "Website",  key: "website",  icon: Globe, type: "url" },
+              { label: "LinkedIn", key: "linkedin", icon: Link2, type: "url"   },
+              { label: "Website",  key: "website",  icon: Globe, type: "url"   },
             ].map(({ label, key, icon: Icon, type }) => (
               <div key={key} className="mb-4 last:mb-0">
                 <label className="block text-xs font-medium mb-1.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
@@ -160,11 +210,10 @@ export default function ProfilePage() {
                 </label>
                 {editing ? (
                   <input type={type} className="input text-sm" value={(form as Record<string, string>)[key]}
-                    onChange={e => setForm({ ...form, [key]: e.target.value })} />
+                    onChange={e => setForm({ ...form, [key]: e.target.value })}
+                    disabled={key === "email"} />
                 ) : (
-                  <p className="text-sm" style={{
-                    color: (form as Record<string, string>)[key] ? "var(--accent-indigo)" : "var(--text-muted)"
-                  }}>
+                  <p className="text-sm" style={{ color: (form as Record<string, string>)[key] ? "var(--accent-indigo)" : "var(--text-muted)" }}>
                     {(form as Record<string, string>)[key] || "Not added"}
                   </p>
                 )}
@@ -174,8 +223,12 @@ export default function ProfilePage() {
             {/* Plan badge */}
             <div className="mt-4 p-3 rounded-xl"
               style={{ backgroundColor: "rgba(91,108,255,0.08)", border: "1px solid rgba(91,108,255,0.2)" }}>
-              <p className="text-xs font-semibold" style={{ color: "var(--accent-indigo)" }}>Free Trial — 22 days left</p>
-              <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>600 credits included</p>
+              <p className="text-xs font-semibold" style={{ color: "var(--accent-indigo)" }}>
+                {profile?.plan ?? "free"} Plan
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                {profile?.credits ?? 0} credits remaining
+              </p>
             </div>
           </motion.div>
         </div>

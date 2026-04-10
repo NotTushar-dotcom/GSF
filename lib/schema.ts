@@ -1,122 +1,103 @@
-// ===== DATABASE SCHEMA PLACEHOLDERS =====
-// Backend-ready TypeScript interfaces.
-// Ready to map to Drizzle ORM tables or Prisma schema.
+// ===== DRIZZLE ORM SCHEMA =====
+// Tables: ventures, expert_profiles, sessions, credit_transactions
+// Identity (name, email, PFP) lives in Clerk.
+// Profile extras (bio, location, links) live in Clerk unsafeMetadata.
+// App data (ventures, sessions, credits log) lives here in Supabase.
 
-// ===== USER =====
-export interface User {
-  id: string;            // UUID — primary key
-  email: string;         // unique, indexed
-  name: string;
-  role: "founder" | "expert" | "admin";
-  credits: number;       // current credit balance
-  plan: "free" | "basic" | "standard" | "premium" | "expert";
-  planExpiresAt?: Date;  // null = no expiry
-  avatarUrl?: string;
-  bio?: string;
-  linkedinUrl?: string;
-  twitterUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import {
+  pgTable, text, integer, boolean,
+  timestamp, jsonb, uuid,
+} from "drizzle-orm/pg-core";
 
-// ===== VENTURE =====
-export interface Venture {
-  id: string;            // UUID
-  founderId: string;     // FK → users.id
-  name: string;
-  tagline: string;
-  description: string;
-  stage: VentureStage;
-  equityOffered: number; // percentage, e.g. 5.5
-  fundingGoal: number;   // in USD
-  fundingRaised: number;
-  traction: string;      // e.g. "200 early sign-ups"
-  sector: string;
-  teamSize: number;
-  pitch_deck_url?: string;
-  isPublic: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// ===================================================
+// VENTURES  (one per founder)
+// ===================================================
+export const ventures = pgTable("ventures", {
+  id:              uuid("id").defaultRandom().primaryKey(),
+  clerkUserId:     text("clerk_user_id").notNull().unique(),
+  name:            text("name").notNull().default(""),
+  tagline:         text("tagline").default(""),
+  description:     text("description").default(""),
+  stage:           text("stage").default("Ideation"),
+  sector:          text("sector").default(""),
+  equity:          text("equity").default("0"),
+  fundingGoal:     text("funding_goal").default("0"),
+  traction:        text("traction").default(""),
+  teamSize:        integer("team_size").default(1),
+  pitchDeckUrl:    text("pitch_deck_url"),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  teamMembers:     jsonb("team_members").$type<any[]>().default([]),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tractionMetrics: jsonb("traction_metrics").$type<any[]>().default([]),
+  createdAt:       timestamp("created_at").defaultNow(),
+  updatedAt:       timestamp("updated_at").defaultNow(),
+});
 
-export type VentureStage =
-  | "ideation"
-  | "screening"
-  | "research"
-  | "mvp"
-  | "funding"
-  | "launch"
-  | "pmf";
+// ===================================================
+// EXPERT PROFILES  (one per expert)
+// ===================================================
+export const expertProfiles = pgTable("expert_profiles", {
+  id:               uuid("id").defaultRandom().primaryKey(),
+  clerkUserId:      text("clerk_user_id").notNull().unique(),
+  title:            text("title").default(""),
+  company:          text("company").default(""),
+  location:         text("location").default(""),
+  linkedin:         text("linkedin").default(""),
+  website:          text("website").default(""),
+  experience:       text("experience").default(""),
+  specializations:  text("specializations").array().default([]),
+  sessionRate:      integer("session_rate").default(100),
+  weeklySlots:      integer("weekly_slots").default(4),
+  totalSessions:    integer("total_sessions").default(0),
+  rating:           text("rating").default("0"),
+  isVerified:       boolean("is_verified").default(false),
+  createdAt:        timestamp("created_at").defaultNow(),
+  updatedAt:        timestamp("updated_at").defaultNow(),
+});
 
-// ===== SESSION (Expert ↔ Founder) =====
-export interface Session {
-  id: string;            // UUID
-  expertId: string;      // FK → users.id (role=expert)
-  founderId: string;     // FK → users.id (role=founder)
-  ventureId?: string;    // FK → ventures.id (optional)
-  status: SessionStatus;
-  scheduledAt: Date;
-  duration: number;      // minutes
-  creditsCost: number;   // credits deducted from founder
-  creditsEarned: number; // credits added to expert
-  notes?: string;
-  recordingUrl?: string;
-  rating?: number;       // 1–5
-  createdAt: Date;
-  updatedAt: Date;
-}
+// ===================================================
+// SESSIONS  (expert ↔ founder)
+// ===================================================
+export const sessions = pgTable("sessions", {
+  id:             uuid("id").defaultRandom().primaryKey(),
+  founderClerkId: text("founder_clerk_id").notNull(),
+  expertClerkId:  text("expert_clerk_id").notNull(),
+  founderName:    text("founder_name").default(""),
+  expertName:     text("expert_name").default(""),
+  ventureName:    text("venture_name").default(""),
+  scheduledAt:    timestamp("scheduled_at").notNull(),
+  duration:       integer("duration").default(30),
+  status:         text("status").default("pending"),  // pending | confirmed | completed | cancelled
+  creditsCost:    integer("credits_cost").default(100),
+  creditsEarned:  integer("credits_earned").default(80),
+  notes:          text("notes"),
+  createdAt:      timestamp("created_at").defaultNow(),
+  updatedAt:      timestamp("updated_at").defaultNow(),
+});
 
-export type SessionStatus = "pending" | "confirmed" | "completed" | "cancelled" | "no-show";
+// ===================================================
+// CREDIT TRANSACTIONS
+// ===================================================
+export const creditTransactions = pgTable("credit_transactions", {
+  id:               uuid("id").defaultRandom().primaryKey(),
+  clerkUserId:      text("clerk_user_id").notNull(),
+  type:             text("type").notNull(),   // 'credit' | 'debit'
+  amount:           integer("amount").notNull(),
+  reason:           text("reason").notNull(),
+  balanceBefore:    integer("balance_before").notNull(),
+  balanceAfter:     integer("balance_after").notNull(),
+  relatedSessionId: uuid("related_session_id"),
+  createdAt:        timestamp("created_at").defaultNow(),
+});
 
-// ===== CREDIT TRANSACTION =====
-export interface CreditTransaction {
-  id: string;
-  userId: string;        // FK → users.id
-  type: "debit" | "credit";
-  amount: number;
-  reason: string;        // e.g. "Session booked", "Session completed", "Plan purchase"
-  relatedSessionId?: string;
-  balanceBefore: number;
-  balanceAfter: number;
-  createdAt: Date;
-}
-
-// ===== EXPERT PROFILE =====
-export interface ExpertProfile {
-  id: string;            // FK → users.id (1:1)
-  userId: string;
-  specializations: string[];
-  experienceYears: number;
-  sessionRate: number;   // credits per session
-  totalSessions: number;
-  rating: number;        // 0–5
-  timezone: string;
-  availability: WeeklyAvailability;
-  venturesSupported: string[]; // venture IDs
-  isVerified: boolean;
-  createdAt: Date;
-}
-
-export interface WeeklyAvailability {
-  monday:    string[];   // array of time slots e.g. ["09:00", "10:00"]
-  tuesday:   string[];
-  wednesday: string[];
-  thursday:  string[];
-  friday:    string[];
-  saturday:  string[];
-  sunday:    string[];
-}
-
-// ===== COMMUNITY POST =====
-export interface CommunityPost {
-  id: string;
-  authorId: string;      // FK → users.id
-  title: string;
-  content: string;
-  tags: string[];
-  upvotes: number;
-  commentCount: number;
-  isPinned: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// ===================================================
+// TYPE EXPORTS
+// ===================================================
+export type Venture              = typeof ventures.$inferSelect;
+export type NewVenture           = typeof ventures.$inferInsert;
+export type ExpertProfile        = typeof expertProfiles.$inferSelect;
+export type NewExpertProfile     = typeof expertProfiles.$inferInsert;
+export type Session              = typeof sessions.$inferSelect;
+export type NewSession           = typeof sessions.$inferInsert;
+export type CreditTransaction    = typeof creditTransactions.$inferSelect;
+export type NewCreditTransaction = typeof creditTransactions.$inferInsert;
