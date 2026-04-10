@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useUser } from "@clerk/nextjs";
 import { User, Edit3, Save, Mail, Globe, Link2, MapPin, Camera } from "lucide-react";
 import Image from "next/image";
 
@@ -14,7 +15,10 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function ProfilePage() {
-  const { profile, loading, saving, updateProfile } = useProfile();
+  const { profile, loading, saving, updateProfile, refetch } = useProfile();
+  const { user: clerkUser } = useUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [saved,   setSaved]   = useState(false);
@@ -59,6 +63,19 @@ export default function ProfilePage() {
       setSaved(true);
       setEditing(false);
       setTimeout(() => setSaved(false), 2500);
+    }
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !clerkUser) return;
+    setUploadingPhoto(true);
+    try {
+      await clerkUser.setProfileImage({ file });
+      await refetch(); // reload profile to get new imageUrl
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -118,6 +135,14 @@ export default function ProfilePage() {
         <motion.div {...fadeUp(0.05)} className="card p-6">
           <div className="flex items-center gap-5">
             <div className="relative">
+              {/* Hidden file input for photo upload */}
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                ref={fileInputRef}
+                onChange={handlePhotoChange}
+              />
               {profile?.imageUrl ? (
                 <Image
                   src={profile.imageUrl}
@@ -132,14 +157,17 @@ export default function ProfilePage() {
                   {avatarInitials}
                 </div>
               )}
-              {editing && (
-                <button
-                  title="Change avatar in Clerk profile settings"
-                  className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md"
-                  style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-default)" }}>
-                  <Camera className="size-3.5" style={{ color: "var(--text-muted)" }} />
-                </button>
-              )}
+              {/* Camera button always visible — clicking opens file picker */}
+              <button
+                title="Change profile photo"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md transition-transform hover:scale-110"
+                style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-default)" }}>
+                {uploadingPhoto
+                  ? <span className="size-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  : <Camera className="size-3.5" style={{ color: "var(--text-muted)" }} />}
+              </button>
             </div>
             <div className="flex-1">
               {editing ? (

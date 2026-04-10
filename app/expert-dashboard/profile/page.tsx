@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { useExpertProfile } from "@/lib/hooks/useExpertProfile";
+import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { Edit3, Save, Mail, Globe, Link2, MapPin, Camera, Star, Award, Briefcase } from "lucide-react";
 
@@ -17,8 +18,11 @@ const fadeUp = (d = 0) => ({
 });
 
 export default function ExpertProfilePage() {
-  const { profile,        loading: profileLoading,  saving: profileSaving,  updateProfile       } = useProfile();
+  const { profile,        loading: profileLoading,  saving: profileSaving,  updateProfile, refetch: refetchProfile } = useProfile();
   const { profile: ep,   loading: epLoading,        saving: epSaving,       updateExpertProfile } = useExpertProfile();
+  const { user: clerkUser } = useUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [saved,   setSaved]   = useState(false);
@@ -85,6 +89,19 @@ export default function ExpertProfilePage() {
     }
   }
 
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !clerkUser) return;
+    setUploadingPhoto(true);
+    try {
+      await clerkUser.setProfileImage({ file });
+      await refetchProfile();
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
   function toggleSpec(domain: string) {
     setForm(prev => ({
       ...prev,
@@ -146,6 +163,8 @@ export default function ExpertProfilePage() {
         <motion.div {...fadeUp(0.05)} className="card p-6">
           <div className="flex items-center gap-5">
             <div className="relative">
+              {/* Hidden file input */}
+              <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handlePhotoChange} />
               {profile?.imageUrl ? (
                 <Image src={profile.imageUrl} alt={form.name} width={80} height={80}
                   className="size-20 rounded-2xl object-cover flex-shrink-0" />
@@ -155,13 +174,16 @@ export default function ExpertProfilePage() {
                   {avatarInitials}
                 </div>
               )}
-              {editing && (
-                <button title="Change avatar in Clerk settings"
-                  className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md"
-                  style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-default)" }}>
-                  <Camera className="size-3.5" style={{ color: "var(--text-muted)" }} />
-                </button>
-              )}
+              <button
+                title="Change profile photo"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="absolute -bottom-1 -right-1 size-7 rounded-lg flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+                style={{ backgroundColor: "var(--bg-card)", border: "1.5px solid var(--border-default)" }}>
+                {uploadingPhoto
+                  ? <span className="size-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  : <Camera className="size-3.5" style={{ color: "var(--text-muted)" }} />}
+              </button>
             </div>
             <div className="flex-1">
               {editing ? (

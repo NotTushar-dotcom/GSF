@@ -32,7 +32,7 @@ const fadeUp = (delay = 0) => ({
   transition: { delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 });
 
-function StageTimeline() {
+function StageTimeline({ currentStage }: { currentStage: number }) {
   const [animatedStage, setAnimatedStage] = useState(-1);
 
   useEffect(() => {
@@ -46,9 +46,9 @@ function StageTimeline() {
       {/* Horizontal stage track */}
       <div className="relative flex items-center gap-0 mb-6 overflow-x-auto pb-2 scrollbar-hide">
         {STAGES.map((stage, i) => {
-          const isPast    = i < CURRENT_STAGE;
-          const isCurrent = i === CURRENT_STAGE;
-          const isFuture  = i > CURRENT_STAGE;
+          const isPast    = i < currentStage;
+          const isCurrent = i === currentStage;
+          const isFuture  = i > currentStage;
 
           return (
             <div key={stage.id} className="flex items-center">
@@ -85,7 +85,7 @@ function StageTimeline() {
                   initial={{ scaleX: 0 }}
                   animate={animatedStage >= i + 1 ? { scaleX: 1 } : {}}
                   style={{
-                    backgroundColor: i < CURRENT_STAGE ? "#10B981" : "var(--border-default)",
+                    backgroundColor: i < currentStage ? "#10B981" : "var(--border-default)",
                     transformOrigin: "left",
                   }}
                   transition={{ duration: 0.3, delay: 0.1 }}
@@ -103,28 +103,28 @@ function StageTimeline() {
         transition={{ delay: 0.8, duration: 0.4 }}
         className="p-4 rounded-2xl"
         style={{
-          background: `linear-gradient(135deg, ${STAGES[CURRENT_STAGE].color}15, ${STAGES[CURRENT_STAGE].color}08)`,
-          border: `1px solid ${STAGES[CURRENT_STAGE].color}30`,
+          background: `linear-gradient(135deg, ${STAGES[currentStage].color}15, ${STAGES[currentStage].color}08)`,
+          border: `1px solid ${STAGES[currentStage].color}30`,
         }}
       >
         <div className="flex items-center gap-3">
           <div
             className="size-10 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: `${STAGES[CURRENT_STAGE].color}20` }}
+            style={{ backgroundColor: `${STAGES[currentStage].color}20` }}
           >
-            <Target className="size-5" style={{ color: STAGES[CURRENT_STAGE].color }} />
+            <Target className="size-5" style={{ color: STAGES[currentStage].color }} />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: STAGES[CURRENT_STAGE].color }}>
-              Current Stage — {STAGES[CURRENT_STAGE].label}
+            <p className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: STAGES[currentStage].color }}>
+              Current Stage — {STAGES[currentStage].label}
             </p>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              {STAGES[CURRENT_STAGE].desc}
+              {STAGES[currentStage].desc}
             </p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-2xl font-bold" style={{ color: STAGES[CURRENT_STAGE].color }}>
-              {Math.round((CURRENT_STAGE / (STAGES.length - 1)) * 100)}%
+            <p className="text-2xl font-bold" style={{ color: STAGES[currentStage].color }}>
+              {Math.round((currentStage / (STAGES.length - 1)) * 100)}%
             </p>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>complete</p>
           </div>
@@ -133,9 +133,9 @@ function StageTimeline() {
         {/* Overall progress bar */}
         <div className="mt-4 progress-bar">
           <motion.div
-            className={`progress-fill progress-${STAGES[CURRENT_STAGE].id}`}
+            className={`progress-fill progress-${STAGES[currentStage].id}`}
             initial={{ width: "0%" }}
-            animate={{ width: `${(CURRENT_STAGE / (STAGES.length - 1)) * 100}%` }}
+            animate={{ width: `${(currentStage / (STAGES.length - 1)) * 100}%` }}
             transition={{ duration: 1, delay: 0.9, ease: "easeOut" }}
           />
         </div>
@@ -143,6 +143,8 @@ function StageTimeline() {
     </div>
   );
 }
+
+
 
 function CreditWallet({ credits }: { credits: number }) {
   const max = 600;
@@ -339,7 +341,7 @@ export default function FounderDashboardPage() {
                   Full details <ChevronRight className="size-3" />
                 </Link>
               </div>
-              <StageTimeline />
+              <StageTimeline currentStage={activeStage} />
             </motion.div>
 
             {/* Idea Summary Card */}
@@ -353,43 +355,54 @@ export default function FounderDashboardPage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Idea identity */}
-                <div className="p-4 rounded-2xl" style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-default)" }}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(91,108,255,0.2), rgba(79,209,197,0.2))" }}>
-                      <Lightbulb className="size-5" style={{ color: "var(--accent-indigo)" }} />
+              {/* Live venture data — empty state if not set up yet */}
+              {!venture ? (
+                <div className="text-center py-6">
+                  <Lightbulb className="size-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+                  <p className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>No venture set up yet</p>
+                  <Link href="/dashboard/venture" className="btn-primary text-xs py-1.5 px-4 mt-3 inline-flex items-center gap-1">
+                    <Plus className="size-3" /> Set up my venture
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Idea identity */}
+                  <div className="p-4 rounded-2xl" style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-default)" }}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="size-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(91,108,255,0.2), rgba(79,209,197,0.2))" }}>
+                        <Lightbulb className="size-5" style={{ color: "var(--accent-indigo)" }} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{venture.name || "My Venture"}</p>
+                        <span className="badge badge-blue text-[10px]">{venture.stage}</span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>EduLoop</p>
-                      <span className="badge badge-blue text-[10px]">Research</span>
-                    </div>
+                    <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                      {venture.tagline || venture.description || "—"}
+                    </p>
                   </div>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    AI-powered peer learning platform for university students with structured cohort journeys.
-                  </p>
-                </div>
 
-                {/* Financial terms */}
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Equity Offered", value: "8%", icon: TrendingUp },
-                    { label: "Funding Goal",   value: "$50K", icon: Coins },
-                    { label: "Traction",       value: "200 users", icon: Zap },
-                    { label: "Team Size",      value: "3 founders", icon: Users },
-                  ].map(({ label, value, icon: Icon }) => (
-                    <div
-                      key={label}
-                      className="p-3 rounded-xl text-center"
-                      style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-soft)" }}
-                    >
-                      <Icon className="size-4 mx-auto mb-1" style={{ color: "var(--accent-indigo)" }} />
-                      <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{value}</p>
-                      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{label}</p>
-                    </div>
-                  ))}
+                  {/* Financial terms */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Equity Offered", value: venture.equity   ? `${venture.equity}%`  : "—", icon: TrendingUp },
+                      { label: "Funding Goal",   value: venture.fundingGoal ? `$${Number(venture.fundingGoal).toLocaleString()}` : "—", icon: Coins },
+                      { label: "Traction",       value: venture.traction || "—", icon: Zap },
+                      { label: "Team Size",      value: venture.teamSize  ? `${venture.teamSize} founder${venture.teamSize !== 1 ? "s" : ""}` : "—", icon: Users },
+                    ].map(({ label, value, icon: Icon }) => (
+                      <div
+                        key={label}
+                        className="p-3 rounded-xl text-center"
+                        style={{ backgroundColor: "var(--bg-surface-2)", border: "1px solid var(--border-soft)" }}
+                      >
+                        <Icon className="size-4 mx-auto mb-1" style={{ color: "var(--accent-indigo)" }} />
+                        <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{value}</p>
+                        <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{label}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
 
             {/* Expert Session History */}
