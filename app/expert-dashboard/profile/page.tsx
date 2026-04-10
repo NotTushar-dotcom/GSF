@@ -95,7 +95,9 @@ export default function ExpertProfilePage() {
     setUploadingPhoto(true);
     try {
       await clerkUser.setProfileImage({ file });
-      await refetchProfile();
+      // clerkUser.imageUrl updates automatically via useUser() — no refetch needed
+    } catch (err) {
+      console.error("Photo upload failed:", err);
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -165,9 +167,10 @@ export default function ExpertProfilePage() {
             <div className="relative">
               {/* Hidden file input */}
               <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handlePhotoChange} />
-              {profile?.imageUrl ? (
-                <Image src={profile.imageUrl} alt={form.name} width={80} height={80}
-                  className="size-20 rounded-2xl object-cover flex-shrink-0" />
+              {/* Use clerkUser.imageUrl — reactive, updates instantly after upload */}
+              {clerkUser?.imageUrl ? (
+                <Image src={clerkUser.imageUrl} alt={form.name || "Profile"} width={80} height={80}
+                  className="size-20 rounded-2xl object-cover flex-shrink-0" unoptimized />
               ) : (
                 <div className="size-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
                   style={{ background: "linear-gradient(135deg, #4FD1C5, #5B6CFF)" }}>

@@ -24,7 +24,7 @@ const STAGES = [
   { id: "launch",    label: "Launch",    color: "#EF4444", desc: "Go to market" },
   { id: "pmf",       label: "PMF",       color: "#5B6CFF", desc: "Product-market fit" },
 ];
-const CURRENT_STAGE = 2; // fallback — overridden by live venture data below
+const CURRENT_STAGE = 0; // fallback — overridden by live venture data below (0 = Ideation)
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
